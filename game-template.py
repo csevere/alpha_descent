@@ -25,6 +25,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Game Template")
 clock = pygame.time.Clock()
 
+all_sprites = pygame.sprite.Group()
+
 #game loop
 
 running = True
@@ -37,9 +39,11 @@ while running:
 		if event.type == pygame.QUIT:
   			running = False 
 	#update
+	all_sprites.update()
 
 	#draw/render
 	screen.fill(BLACK)
+	all_sprites.draw(screen)
 	#after drawing everything, flip the display
 	pygame.display.flip()
 
