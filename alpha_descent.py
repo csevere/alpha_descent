@@ -1,10 +1,13 @@
 #ALPHA DESCENT GAME
+#Music: Reusenoise  (DNB Mix) by spinningmerkaba (c) copyright 2017 Licensed under a Creative Commons Attribution (3.0) license. 
+#Art from Kenney.nl
 
 import pygame
 import random 
 from os import path 
 
 img_dir = path.join(path.dirname(__file__), 'img')
+snd_dir = path.join(path.dirname(__file__), 'snd')
 
 WIDTH = 480
 HEIGHT = 600
@@ -24,6 +27,18 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("ALPHA DESCENT")
 clock = pygame.time.Clock()
 
+####### DRAWING TEXT ON SCREEN #############
+font_name = pygame.font.match_font('arial')
+def draw_text(surf, text, size, x, y):
+	font = pygame.font.Font(font_name, size)
+	#true means anti-aliased
+	text_surface = font.render(text, True, WHITE)
+	text_rect = text_surface.get_rect()
+	text_rect.midtop = (x, y)
+	surf.blit(text_surface, text_rect)
+
+		
+####### PLAYER CLASS #############
 class Player(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
@@ -39,7 +54,6 @@ class Player(pygame.sprite.Sprite):
 		self.rect.centerx = WIDTH/2
 		self.rect.bottom = HEIGHT - 10
 		self.speedx = 0
-
 
 	def update(self):
 		#default speed should be 0
@@ -59,7 +73,10 @@ class Player(pygame.sprite.Sprite):
 		bullet = Bullet(self.rect.centerx, self.rect.top)
 		all_sprites.add(bullet)
 		bullets.add(bullet)
+		shoot_snd.play()
 
+
+####### MOB CLASS #############
 class Mob(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
@@ -104,6 +121,8 @@ class Mob(pygame.sprite.Sprite):
 			self.rect.y = random.randrange(-100, -40)
 			self.speedy = random.randrange(1, 8)
 
+
+####### BULLET CLASS #############
 class Bullet(pygame.sprite.Sprite):
   	#tell bullet to spawn at particular loc according to player
 	def __init__(self, x, y):
@@ -121,7 +140,6 @@ class Bullet(pygame.sprite.Sprite):
 		if self.rect.bottom < 0:
 			self.kill()
 
-
 ############ LOADING GAME GRAPHICS ############
 background = pygame.image.load(path.join(img_dir, "starfield.png")).convert()
 background_rect = background.get_rect()	
@@ -134,6 +152,15 @@ meteor_list = [	'meteor_big1.png', 'meteor_big2.png', 'meteor_big3.png', 'meteor
 for img in meteor_list:
   	meteor_images.append(pygame.image.load(path.join(img_dir, img)).convert())
 
+############ LOADING GAME SOUNDS ############
+shoot_snd = pygame.mixer.Sound(path.join(snd_dir, "Laser_Shoot2.wav"))
+expl_snds = []
+for snd in ['Expl3.wav','Expl4.wav', 'Expl6.wav']:
+  	expl_snds.append(pygame.mixer.Sound(path.join(snd_dir, snd)))
+pygame.mixer.music.load(path.join(snd_dir, 'jlbrock.mp3'))
+#control music sound
+pygame.mixer.music.set_volume(0.4)
+
 
 ########### CREATE SPRITES ###################  		  
 all_sprites = pygame.sprite.Group()
@@ -141,14 +168,20 @@ mobs = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 player = Player()
 all_sprites.add(player)
-
 for i in range(8):
 	m = Mob()
 	all_sprites.add(m)
 	mobs.add(m)
 
+##SCORE##
+score = 0
+
+##PLAY BG Music / loops =-1 plays music over again##
+pygame.mixer.music.play(loops=-1)
 
 ############## GAME LOOP ######################
+
+
 running = True
 while running:
 	clock.tick(FPS)
@@ -160,7 +193,6 @@ while running:
 				player.shoot()
 			 
 
-
 	#UPDATE 
 	all_sprites.update()
 
@@ -168,6 +200,9 @@ while running:
 	hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
 	#respawn the mob
 	for hit in hits:
+		score += 50 - hit.radius
+		#play random sound in list 
+		random.choice(expl_snds).play() 
 		m = Mob()
 		all_sprites.add(m)
 		mobs.add(m)
@@ -184,6 +219,7 @@ while running:
 	screen.fill(BLACK)
 	screen.blit(background, background_rect)
 	all_sprites.draw(screen)
+	draw_text(screen, str(score), 18, WIDTH / 2, 10)
 	pygame.display.flip()
 
 pygame.quit()
