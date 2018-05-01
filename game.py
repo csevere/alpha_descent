@@ -22,7 +22,7 @@ class Game:
 	
 	def events(self):
   		#game loop - events
-			pass
+		pass
 	
 	def draw(self):
   		#game loop - draw
