@@ -5,6 +5,8 @@
 import pygame
 import random 
 from os import path 
+from ad_sprites import * 
+from settings import *
 
 img_dir = path.join(path.dirname(__file__), 'img')
 enemy_dir = path.join(path.dirname(__file__), 'img/enemy')
@@ -12,23 +14,11 @@ snd_dir = path.join(path.dirname(__file__), 'snd')
 expl_dir = path.join(path.dirname(__file__), 'img/expl')
 expl_1dir = path.join(path.dirname(__file__), 'img/expl_1')
 
-WIDTH = 480
-HEIGHT = 600
-FPS = 60
-POWERUP_TIME = 5000
-
-######## COLORS ###############
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-YELLOW = (255, 255, 0)
-
+#initialize pygame
 pygame.init()
 pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("ALPHA DESCENT")
+pygame.display.set_caption(TITLE)
 clock = pygame.time.Clock()
 
 ####### DRAWING TEXT ON SCREEN #############
@@ -136,7 +126,6 @@ class Player(pygame.sprite.Sprite):
 		self.power += 1
 		self.power_time = pygame.time.get_ticks()
 
-
 	def shoot(self):
 		now = pygame.time.get_ticks()
 		if now - self.last_shot > self.shoot_delay:
@@ -183,7 +172,7 @@ class Mob(pygame.sprite.Sprite):
 		self.rot_speed = random.randrange(-8, 8)
 		#grabs number of ticks since clock started 
 		self.last_update = pygame.time.get_ticks()
-		self.shoot_delay = 1000
+		self.shoot_delay = 500
 		self.last_shot = pygame.time.get_ticks()
 
 	def rotate(self):
@@ -215,7 +204,7 @@ class Mob(pygame.sprite.Sprite):
 		now = pygame.time.get_ticks()
 		if now - self.last_shot > self.shoot_delay:
 			self.last_shot = now
-			en_bullet = Bullet(self.rect.centerx, self.rect.bottom, enemy_laser_img, 10)
+			en_bullet = Bullet(self.rect.centerx, self.rect.bottom + 10, enemy_laser_img, 10)
 			all_sprites.add(en_bullet)
 			en_bullets.add(en_bullet)
 			# enemy_shoot.play()
@@ -248,7 +237,7 @@ class Power(pygame.sprite.Sprite):
 		self.image.set_colorkey(BLACK)
 		self.rect = self.image.get_rect()
 		self.rect.center = center
-		self.speedy = 1
+		self.speedy = 5
 
 	def update(self):
 		self.rect.y += self.speedy
@@ -286,9 +275,25 @@ class Explosion(pygame.sprite.Sprite):
 				self.image = explosion_anim[self.size][self.frame]
 				self.rect = self.image.get_rect()
 				self.rect.center = center
-			 
+
+############ SHOW GAME OVER SCREEN ############
+def show_gameover_screen():
+	screen.blit(background, background_rect)
+	draw_text(screen, "ALPHA DESCENT", 64, WIDTH/2, HEIGHT /4)
+	draw_text(screen, "Arrow keys move, Spacebar to fire", 22, WIDTH / 2, HEIGHT / 2)
+	draw_text(screen, "Press any key to begin", 18, WIDTH / 2, HEIGHT * 3 / 4)
+	pygame.display.flip()
+	waiting = True
+	while waiting:
+		clock.tick(FPS)
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+			if event.type == pygame.KEYUP:
+				waiting = False 
+
 ############ LOADING GAME GRAPHICS ############
-background = pygame.image.load(path.join(img_dir, "starfield.png")).convert()
+background = pygame.image.load(path.join(img_dir, "spacefield.png")).convert()
 background_rect = background.get_rect()	
 player_img = pygame.image.load(path.join(img_dir, "playership_blue.png")).convert()
 player_mini_img = pygame.transform.scale(player_img, (25, 19))
@@ -306,7 +311,6 @@ enemy_list = [	'enemyBlack1.png', 'enemyBlack4.png', 'enemyBlue1.png', 'enemyBlu
 			]
 for img in enemy_list:
   	enemy_images.append(pygame.image.load(path.join(enemy_dir, img)).convert())
-
 
 #EXPLOSIONS: create dic with lists, load, scale igs
 explosion_anim = {}
@@ -337,32 +341,37 @@ pygame.mixer.music.load(path.join(snd_dir, 'jlbrock.mp3'))
 shoot_snd = pygame.mixer.Sound(path.join(snd_dir, "Laser_Shoot2.wav"))
 enemy_shoot = pygame.mixer.Sound(path.join(snd_dir, "Laser_ShootE.wav"))
 player_death_snd = pygame.mixer.Sound(path.join(snd_dir, 'Expl8.wav'))
+powerup_bolt_snd = pygame.mixer.Sound(path.join(snd_dir, 'Powerup.wav'))
+powerup_shield_snd = pygame.mixer.Sound(path.join(snd_dir, 'Powerup4.wav'))
 expl_snds = []
 for snd in ['Expl3.wav','Expl4.wav', 'Expl6.wav']:
   	expl_snds.append(pygame.mixer.Sound(path.join(snd_dir, snd)))
 #control music sound
 pygame.mixer.music.set_volume(0.4)
 
-########### CREATE SPRITES ###################  		  
-all_sprites = pygame.sprite.Group()
-mobs = pygame.sprite.Group()
-bullets = pygame.sprite.Group()
-en_bullets = pygame.sprite.Group()
-powerups = pygame.sprite.Group()
-player = Player()
-all_sprites.add(player)
-for i in range(5):
-  	newmob()
-
-##SCORE##
-score = 0
-
 ##PLAY BG Music / loops =-1 plays music over again##
 pygame.mixer.music.play(loops=-1)
 
 ############## GAME LOOP ######################
 running = True
+game_over = True
 while running:
+	if game_over:
+		show_gameover_screen()
+		game_over = False 
+########### CREATE SPRITES ###################  		  
+		all_sprites = pygame.sprite.Group()
+		mobs = pygame.sprite.Group()
+		bullets = pygame.sprite.Group() 
+		en_bullets = pygame.sprite.Group()
+		powerups = pygame.sprite.Group()
+		player = Player()
+		all_sprites.add(player)
+		for i in range(5):
+			newmob()
+		##SCORE##
+		score = 0
+
 	clock.tick(FPS)
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -371,7 +380,7 @@ while running:
 	#UPDATE 
 	all_sprites.update()
 
-	#####PLAYER HIT MOB / true for both so both get deleted
+	##### PLAYER HIT MOB / true for both so both get deleted ###########
 	hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
 	#respawn the mob
 	for hit in hits:
@@ -396,20 +405,20 @@ while running:
 		expl = Explosion(hit.rect.center, 'sm')
 		all_sprites.add(expl) 
 	
-
-	#####POWERUPS HIT PLAYER 
+	#####POWERUPS HIT PLAYER ##################
 	hits = pygame.sprite.spritecollide(player, powerups, True)
 	for hit in hits:
 		if hit.type == 'shield':
+			powerup_shield_snd.play()
 			player.shield += random.randrange(10, 30)
 			if player.shield >= 100:
 				player.shield = 100
 
 		if hit.type == 'laser':
-  			player.powerup()
+			powerup_bolt_snd.play() 
+			player.powerup()
   			
-
-	#####MOB HIT PLAYER / circle specifies type of collision
+	##### MOB HIT PLAYER / circle specifies type of collision ##########
 	hits = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_circle)
 	for hit in hits:
 		random.choice(expl_snds).play()
@@ -428,7 +437,7 @@ while running:
 	hits = pygame.sprite.spritecollide(player, en_bullets, True, pygame.sprite.collide_circle)
 	for hit in hits:
 		random.choice(expl_snds).play()
-		player.shield -= 5
+		player.shield -= 2
 		expl = Explosion(hit.rect.center, 'sm')
 		all_sprites.add(expl) 
 		if player.shield <= 0:
@@ -442,7 +451,7 @@ while running:
 	# if player died and explosion finished playing
 	if player.lives == 0 and not death_expl.alive():
 		#game over 
-		running = False 
+		game_over = True 
 
 	#RENDER
 	screen.fill(BLACK)
