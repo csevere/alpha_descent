@@ -7,6 +7,7 @@ import random
 from os import path 
 
 img_dir = path.join(path.dirname(__file__), 'img')
+enemy_dir = path.join(path.dirname(__file__), 'img/enemy')
 snd_dir = path.join(path.dirname(__file__), 'snd')
 expl_dir = path.join(path.dirname(__file__), 'img/expl')
 expl_1dir = path.join(path.dirname(__file__), 'img/expl_1')
@@ -126,7 +127,7 @@ class Player(pygame.sprite.Sprite):
 		now = pygame.time.get_ticks()
 		if now - self.last_shot > self.shoot_delay:
 			self.last_shot = now
-			bullet = Bullet(self.rect.centerx, self.rect.top)
+			bullet = Bullet(self.rect.centerx, self.rect.top, laser_img, -10)
 			all_sprites.add(bullet)
 			bullets.add(bullet)
 			shoot_snd.play()
@@ -142,7 +143,7 @@ class Player(pygame.sprite.Sprite):
 class Mob(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
-		self.image_orig = random.choice(meteor_images)
+		self.image_orig = random.choice(enemy_images)
 		self.image_orig.set_colorkey(BLACK)
 		self.image = self.image_orig.copy()
 		self.rect = self.image.get_rect()
@@ -159,6 +160,8 @@ class Mob(pygame.sprite.Sprite):
 		self.rot_speed = random.randrange(-8, 8)
 		#grabs number of ticks since clock started 
 		self.last_update = pygame.time.get_ticks()
+		self.shoot_delay = 1000
+		self.last_shot = pygame.time.get_ticks()
 
 	def rotate(self):
 		now = pygame.time.get_ticks()
@@ -174,20 +177,50 @@ class Mob(pygame.sprite.Sprite):
 			self.rect.center = old_center 
 
 	def update(self):
-		self.rotate()
+		# self.rotate()
 		#makes it move downward 
+		self.shoot()
+		# enemy_shoot.play() 
 		self.rect.x += self.speedx 
 		self.rect.y += self.speedy
 		if self.rect.top > HEIGHT + 10 or self.rect.left < -25 or self.rect.right > WIDTH + 20:
 			self.rect.x = random.randrange(WIDTH - self.rect.width)
 			self.rect.y = random.randrange(-100, -40)
 			self.speedy = random.randrange(1, 8)
+	
+	def shoot(self):
+		now = pygame.time.get_ticks()
+		if now - self.last_shot > self.shoot_delay:
+			self.last_shot = now
+			en_bullet = Bullet(self.rect.centerx, self.rect.bottom, enemy_laser_img, 10)
+			all_sprites.add(en_bullet)
+			en_bullets.add(en_bullet)
+			# enemy_shoot.play()
 
 ####### BULLET CLASS #############
 class Bullet(pygame.sprite.Sprite):
   	#tell bullet to spawn at particular loc according to player
+	def __init__(self, x, y, img, speedy):
+		pygame.sprite.Sprite.__init__(self)
+		# self.image = laser_img
+		self.image = img
+		self.image.set_colorkey(BLACK)
+		self.rect = self.image.get_rect()
+		self.rect.bottom = y
+		self.rect.centerx = x
+		self.speedy = speedy
+
+	def update(self):
+		self.rect.y += self.speedy
+		#kill if it moves off the top of screen
+		if self.rect.bottom < 0:
+			self.kill()
+
+####### POWERUPS CLASS #############
+class Power(pygame.sprite.Sprite):
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
+		self.type = random.choice(['shield', 'gun'])
 		self.image = laser_img
 		self.image.set_colorkey(BLACK)
 		self.rect = self.image.get_rect()
@@ -239,12 +272,27 @@ player_img = pygame.image.load(path.join(img_dir, "playership_blue.png")).conver
 player_mini_img = pygame.transform.scale(player_img, (25, 19))
 player_mini_img.set_colorkey(BLACK)
 laser_img = pygame.image.load(path.join(img_dir, "laser_green.png")).convert()
-meteor_images = []
-meteor_list = [	'meteor_big1.png', 'meteor_big2.png', 'meteor_big3.png', 'meteor_big4.png', 
-				'meteor_med1.png', 'meteor_med3.png', 'meteor_small1.png', 'meteor_small2.png', 'meteor_tiny1.png', 
-				'meteor_tiny2.png']
-for img in meteor_list:
-  	meteor_images.append(pygame.image.load(path.join(img_dir, img)).convert())
+enemy_laser_img = pygame.image.load(path.join(enemy_dir, "laserRed02.png")).convert()
+#powerups
+powerup1_img = pygame.image.load(path.join(img_dir, "shield_gold.png")).convert()
+powerup2_img = pygame.image.load(path.join(img_dir, "bolt_gold.png")).convert()
+powerup1_img.set_colorkey(BLACK)
+powerup2_img.set_colorkey(BLACK)
+
+# meteor_images = []
+# meteor_list = [	'meteor_big1.png', 'meteor_big2.png', 'meteor_big3.png', 'meteor_big4.png', 
+# 				'meteor_med1.png', 'meteor_med3.png', 'meteor_small1.png', 'meteor_small2.png', 'meteor_tiny1.png', 
+# 				'meteor_tiny2.png']
+# for img in meteor_list:
+#   	meteor_images.append(pygame.image.load(path.join(img_dir, img)).convert())
+
+enemy_images = []
+enemy_list = [	'enemyBlack1.png', 'enemyBlack4.png', 'enemyBlue1.png', 'enemyBlue4.png', 
+				'enemyGreen1.png', 'enemyGreen4.png', 'enemyRed1.png', 'enemyRed4.png',  
+			]
+for img in enemy_list:
+  	enemy_images.append(pygame.image.load(path.join(enemy_dir, img)).convert())
+
 
 #EXPLOSIONS: create dic with lists, load, scale igs
 explosion_anim = {}
@@ -273,6 +321,7 @@ for i in range(23):
 ############ LOADING GAME SOUNDS ############
 pygame.mixer.music.load(path.join(snd_dir, 'jlbrock.mp3'))
 shoot_snd = pygame.mixer.Sound(path.join(snd_dir, "Laser_Shoot2.wav"))
+enemy_shoot = pygame.mixer.Sound(path.join(snd_dir, "Laser_ShootE.wav"))
 player_death_snd = pygame.mixer.Sound(path.join(snd_dir, 'Expl8.wav'))
 expl_snds = []
 for snd in ['Expl3.wav','Expl4.wav', 'Expl6.wav']:
@@ -284,9 +333,10 @@ pygame.mixer.music.set_volume(0.4)
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
+en_bullets = pygame.sprite.Group()
 player = Player()
 all_sprites.add(player)
-for i in range(8):
+for i in range(5):
   	newmob()
 
 ##SCORE##
@@ -316,15 +366,38 @@ while running:
 		expl = Explosion(hit.rect.center, 'lg')
 		all_sprites.add(expl) 
 		newmob()
+	
+	hits = pygame.sprite.groupcollide(en_bullets, bullets, True, True)
+	#respawn the mob
+	for hit in hits:
+		score += 70 
+		#play random sound in list 
+		random.choice(expl_snds).play()
+		expl = Explosion(hit.rect.center, 'sm')
+		all_sprites.add(expl) 
 
 	#MOB HIT PLAYER / circle specifies type of collision
-	hits = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_circle)
-	for hit in hits:
+	hits1 = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_circle)
+	for hit in hits1:
 		random.choice(expl_snds).play()
 		player.shield -= hit.radius * 2
 		expl = Explosion(hit.rect.center, 'sm')
 		all_sprites.add(expl) 
 		newmob()
+		if player.shield <= 0:
+			player_death_snd.play() 
+			death_expl = Explosion(player.rect.center, 'player')
+			all_sprites.add(death_expl)
+			player.hide()
+			player.lives -= 1
+			player.shield = 100
+
+	hits2 = pygame.sprite.spritecollide(player, en_bullets, True, pygame.sprite.collide_circle)
+	for hit in hits2:
+		random.choice(expl_snds).play()
+		player.shield -= 5
+		expl = Explosion(hit.rect.center, 'sm')
+		all_sprites.add(expl) 
 		if player.shield <= 0:
 			player_death_snd.play() 
 			death_expl = Explosion(player.rect.center, 'player')
