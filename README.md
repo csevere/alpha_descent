@@ -1,5 +1,5 @@
-# alpha_descent
-ALPHA DESCENT: a bullet hell game created with pygame, using python3
+# ALPHA DESCENT
+A bullet-hell space game created with pygame, using Python 3
 
 
 <p align='center'>
