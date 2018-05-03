@@ -5,8 +5,6 @@
 import pygame
 import random 
 from os import path 
-from ad_sprites import * 
-from settings import *
 
 img_dir = path.join(path.dirname(__file__), 'img')
 enemy_dir = path.join(path.dirname(__file__), 'img/enemy')
@@ -359,6 +357,7 @@ while running:
 	if game_over:
 		show_gameover_screen()
 		game_over = False 
+
 ########### CREATE SPRITES ###################  		  
 		all_sprites = pygame.sprite.Group()
 		mobs = pygame.sprite.Group()
@@ -366,7 +365,7 @@ while running:
 		en_bullets = pygame.sprite.Group()
 		powerups = pygame.sprite.Group()
 		player = Player()
-		all_sprites.add(player)
+		all_sprites.add(player) 
 		for i in range(5):
 			newmob()
 		##SCORE##
