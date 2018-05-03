@@ -33,6 +33,8 @@ expl_1dir = path.join(path.dirname(__file__), 'img/expl_1')
 ############ LOADING GAME GRAPHICS ############
 background = pg.image.load(path.join(img_dir, "spacefield.png")).convert()
 background_rect = background.get_rect()	
+start_screen = pg.image.load(path.join(img_dir, "Background-4.jpg")).convert()
+start_screen_rect = start_screen.get_rect()
 player_img = pg.image.load(path.join(img_dir, "playership_blue.png")).convert()
 player_mini_img = pg.transform.scale(player_img, (25, 19))
 player_mini_img.set_colorkey(BLACK)

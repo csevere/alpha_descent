@@ -5,7 +5,7 @@ from settings import *
 from os import path 
 
 all_sprites = pg.sprite.Group()
-mobs = pg.sprite.Group()
+enemy_1 = pg.sprite.Group()
 bullets = pg.sprite.Group() 
 en_bullets = pg.sprite.Group()
 powerups = pg.sprite.Group()
@@ -103,8 +103,8 @@ class Player(pg.sprite.Sprite):
 		#hiding ship below the screen 
 		self.rect.center = (WIDTH / 2, HEIGHT + 200)
   		
-####### MOB CLASS #############
-class Mob(pg.sprite.Sprite):
+####### Enemy_1 CLASS #############
+class Enemy_1(pg.sprite.Sprite):
 	def __init__(self):
 		pg.sprite.Sprite.__init__(self)
 		self.image_orig = random.choice(enemy_images)

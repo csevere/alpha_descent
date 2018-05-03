@@ -6,9 +6,7 @@ import pygame as pg
 import random 
 from settings import *
 from sprites import * 
-from os import path 
-
-game_over = True      
+from os import path    
 
 class Game:
 	def __init__(self):
@@ -21,15 +19,20 @@ class Game:
 		self.running = True 
 		self.game_over = True 
 
-	def newmob(self):
-		self.m = Mob()
-		self.all_sprites.add(self.m)
-		mobs.add(self.m)
+	# def newmob(self):
+	# 	self.m = Mob()
+	# 	self.all_sprites.add(self.m)
+	# 	enemy_1s.add(self.m)
+
+	def newenemy_1(self):
+		self.e1 = Enemy_1()
+		self.all_sprites.add(self.e1)
+		enemy_1s.add(self.e1)
   	
-	def draw_text(self, surf, text, size, x, y):
+	def draw_text(self, surf, text, size, x, y, color):
 		self.font = pg.font.Font(font_name, size)
 		#true means anti-aliased
-		self.text_surface = self.font.render(text, True, WHITE)
+		self.text_surface = self.font.render(text, True, color)
 		self.text_rect = self.text_surface.get_rect()
 		self.text_rect.midtop = (x, y)
 		surf.blit(self.text_surface, self.text_rect)
@@ -56,12 +59,15 @@ class Game:
 
 	def new(self):
 		self.all_sprites = all_sprites
-		self.mobs = pg.sprite.Group()
+		# self.enemy_1s = pg.sprite.Group()
+		self.enemy_1s = pg.sprite.Group()
 		self.player = Player()
 		self.all_sprites.add(self.player)
 		self.score = 0
+		self.level = 0 
 		for i in range(5):
-  			self.newmob()
+  			# self.newmob()
+			self.newenemy_1()
 		self.run()
 	
 	def run(self):
@@ -77,7 +83,7 @@ class Game:
   		#game loop update
 		self.all_sprites.update()
 		##### PLAYER HIT MOB / true for both so both get deleted ###########
-		self.hits = pg.sprite.groupcollide(mobs, bullets, True, True)
+		self.hits = pg.sprite.groupcollide(enemy_1s, bullets, True, True)
 		#respawn the mob
 		for hit in self.hits:
 			self.score += 50 - hit.radius
@@ -115,7 +121,7 @@ class Game:
 				self.player.powerup()
 				
 		##### MOB HIT PLAYER / circle specifies type of collision ##########
-		self.hits = pg.sprite.spritecollide(self.player, mobs, True, pg.sprite.collide_circle)
+		self.hits = pg.sprite.spritecollide(self.player, enemy_1s, True, pg.sprite.collide_circle)
 		for hit in self.hits:
 			random.choice(expl_snds).play()
 			self.player.shield -= hit.radius * 2
@@ -147,7 +153,18 @@ class Game:
 		# if player died and explosion finished playing
 		if self.player.lives == 0 and not self.death_expl.alive():
 			#game over 
-			game_over = True
+			self.playing = False
+			for sprite in self.all_sprites:
+				sprite.kill() 
+		
+		for hit in self.hits:
+			if self.score >= 3000:
+				self.level = 1
+			if self.score >= 6000:
+  				self.level = 2
+			if self.score >= 9000:
+  				self.level = 3
+	
 
 	def events(self):
   		#game loop - events
@@ -162,39 +179,51 @@ class Game:
 		self.screen.fill(BLACK)
 		self.screen.blit(background, background_rect)
 		self.all_sprites.draw(self.screen)
-		self.draw_text(self.screen, str(self.score), 18, WIDTH / 2, 10)
+		#draw levels
+		self.draw_text(self.screen, "LEVEL: " + str(self.level), 18, WIDTH * 1.5 / 4, 10, WHITE)
+		self.draw_text(self.screen, "SCORE: " + str(self.score), 18, WIDTH * 2.5 / 4, 10, WHITE)
 		self.draw_shield_bar(self.screen, 5, 5, self.player.shield)
 		self.draw_lives(self.screen, WIDTH - 100, 5, self.player.lives, player_mini_img)
 		pg.display.flip()
 	
-	def show_start_screen(self):
-  		#game splash/start screen
-		pass
-	
-	def show_gameover_screen(self):
-		#game over/continue
-		self.screen.blit(background, background_rect)
-		self.draw_text(screen, "ALPHA DESCENT", 64, WIDTH/2, HEIGHT /4)
-		self.draw_text(screen, "Arrow keys move, Spacebar to fire", 22, WIDTH / 2, HEIGHT / 2)
-		self.draw_text(screen, "Press any key to begin", 18, WIDTH / 2, HEIGHT * 3 / 4)
-		pg.display.flip()
-		self.waiting = True
-		while self.waiting:
-			self.clock.tick(FPS)
+	def wait_for_key(self):
+		waiting = True
+		while waiting:
+			self.clock.tick(30)
 			for event in pg.event.get():
 				if event.type == pg.QUIT:
-					pg.quit()
-				if event.type == pg.KEYUP:
-					self.waiting = False 
-					
-	
+					waiting = False
+					self.running = False
+				if event.type == pg.MOUSEBUTTONDOWN:
+					waiting = False
+			
+	def show_start_screen(self):
+		#game splash/start screen
+		self.screen.blit(start_screen, start_screen_rect)
+		self.draw_text(screen, "ALPHA DESCENT", 64, WIDTH/2, HEIGHT /4, WHITE)
+		self.draw_text(screen, "Arrow keys to move | Spacebar to fire.", 22, WIDTH / 2, HEIGHT / 2, WHITE)
+		self.draw_text(screen, "Click mouse to continue.", 18, WIDTH / 2, HEIGHT * 3 / 4, WHITE)
+		self.draw_text(screen, "© 2018 Carla Severe", 15, WIDTH / 2, HEIGHT * 3.6 / 4, WHITE)
+		pg.display.flip()
+		self.wait_for_key() 
+				
+	def show_gameover_screen(self):
+		#game over
+		if not self.running:
+  			return
+		self.screen.fill(BLACK)
+		self.screen.blit(background, background_rect)
+		self.draw_text(screen, "GAME OVER", 64, WIDTH / 2, HEIGHT / 4, RED)
+		self.draw_text(screen, "Score: " + str(self.score), 64, WIDTH / 2, HEIGHT * 3 / 4, RED)
+		self.draw_text(screen, "Click mouse to play again", 18, WIDTH / 2, HEIGHT * 3.6 / 4, WHITE)
+		pg.display.flip()
+		self.wait_for_key() 
+			
 g = Game()
 g.show_start_screen()
 while g.running:
-	if game_over:
-		g.show_gameover_screen()
-		game_over = False
-		g.new()
+	g.new()
+	g.show_gameover_screen()
 pg.quit()
 	
 
