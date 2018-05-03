@@ -26,9 +26,10 @@ YELLOW = (255, 255, 0)
 ########## IMAGES ###############
 img_dir = path.join(path.dirname(__file__), 'img')
 enemy_dir = path.join(path.dirname(__file__), 'img/enemy')
-snd_dir = path.join(path.dirname(__file__), 'snd')
 expl_dir = path.join(path.dirname(__file__), 'img/expl')
 expl_1dir = path.join(path.dirname(__file__), 'img/expl_1')
+meteors_dir = path.join(path.dirname(__file__), 'img/meteors')
+snd_dir = path.join(path.dirname(__file__), 'snd')
 
 ############ LOADING GAME GRAPHICS ############
 background = pg.image.load(path.join(img_dir, "spacefield.png")).convert()
@@ -41,16 +42,26 @@ player_mini_img.set_colorkey(BLACK)
 laser_img = pg.image.load(path.join(img_dir, "laser_green.png")).convert()
 p_laser_img = pg.image.load(path.join(img_dir, "laserBlue02.png")).convert()
 enemy_laser_img = pg.image.load(path.join(enemy_dir, "laserRed02.png")).convert()
-#powerups
+###### POWERUPS
 powerup_images = {}
 powerup_images['shield'] = pg.image.load(path.join(img_dir, "shield_gold.png")).convert()
 powerup_images['laser'] = pg.image.load(path.join(img_dir, "bolt_gold.png")).convert()
+##### ENEMIES
 enemy_images = []
 enemy_list = [	'enemyBlack1.png', 'enemyBlack4.png', 'enemyBlue1.png', 'enemyBlue4.png', 
 				'enemyGreen1.png', 'enemyGreen4.png', 'enemyRed1.png', 'enemyRed4.png',  
 			]
 for img in enemy_list:
   	enemy_images.append(pg.image.load(path.join(enemy_dir, img)).convert())
+
+###### METEORS
+meteor_images = []
+meteor_list = ['meteor_big1.png', 'meteor_big2.png', 'meteor_big3.png', 'meteor_big4.png', 
+				'meteor_med1.png', 'meteor_med3.png', 'meteor_small1.png', 'meteor_small2.png', 'meteor_tiny1.png', 
+				'meteor_tiny2.png']
+for img in meteor_list:
+  	meteor_images.append(pg.image.load(path.join(meteors_dir, img)).convert())
+
 
 
 #EXPLOSIONS: create dic with lists, load, scale igs
