@@ -5,7 +5,7 @@ from settings import *
 from os import path 
 
 all_sprites = pg.sprite.Group()
-enemy_1 = pg.sprite.Group()
+enemy_1s = pg.sprite.Group()
 bullets = pg.sprite.Group() 
 en_bullets = pg.sprite.Group()
 powerups = pg.sprite.Group()

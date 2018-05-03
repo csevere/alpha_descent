@@ -66,7 +66,7 @@ class Game:
 		self.score = 0
 		self.level = 0 
 		for i in range(5):
-  			# self.newmob()
+  			# self.newenemy_1()
 			self.newenemy_1()
 		self.run()
 	
@@ -95,7 +95,7 @@ class Game:
 				self.power = Power(hit.rect.center)
 				self.all_sprites.add(self.power)
 				powerups.add(self.power)
-			self.newmob()
+			self.newenemy_1()
 
 		#player's bullets hit mob bullets 
 		self.hits = pg.sprite.groupcollide(en_bullets, bullets, True, True)
@@ -127,7 +127,7 @@ class Game:
 			self.player.shield -= hit.radius * 2
 			self.expl = Explosion(hit.rect.center, 'sm')
 			self.all_sprites.add(self.expl) 
-			self.newmob()
+			self.newenemy_1()
 			if self.player.shield <= 0:
 				player_death_snd.play() 
 				self.death_expl = Explosion(self.player.rect.center, 'player')
