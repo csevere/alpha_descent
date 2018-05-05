@@ -184,7 +184,6 @@ class Game:
 		# for hit in self.hits:
 		if self.score >= 300:
 			self.level = 1
-			enemy_1s.kill()
 			if random.random() > 0.9:
 				self.newmeteors()
 				
