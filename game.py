@@ -57,25 +57,28 @@ class Game:
 			self.img_rect.y = y
 			surf.blit(img, self.img_rect)
 
-	def new(self):
+	def phase_0(self):
 		self.all_sprites = all_sprites
 		self.score = 0
-		self.level = 0 
+		self.phase = 0 
 		self.player = Player()
 		self.all_sprites.add(self.player)
 		for i in range(5):
 			self.newenemy_1()
-
 		self.run()
 	
 	def run(self):
 		#game loop
 		self.playing = True
+		self.phase1 = False
+		self.phase2 = False
+		self.phase3 = False 
 		while self.playing:
 			self.clock.tick(FPS)
 			self.events()
 			self.update()
 			self.draw()
+	
 	
 	def laser_hits_e1(self):
 		self.hits = pg.sprite.groupcollide(enemy_1s, bullets, True, True)
@@ -179,14 +182,21 @@ class Game:
 				powerup_bolt_snd.play() 
 				self.player.powerup()
 
-	def level_1(self):
-		# self.hits = pg.sprite.groupcollide(enemy_1s, bullets, True, True)
-		# for hit in self.hits:
-		if self.score >= 300:
-			self.level = 1
-			if random.random() > 0.9:
-				self.newmeteors()
-				
+	def update_phase(self):
+		if pg.time.get_ticks() >= 10000:
+			self.phase = 1
+			self.show_phase1_screen
+			if random.random() > 0.8:
+  				self.newmeteors()
+			
+	def player_death(self):
+  		# if player died and explosion finished playing
+		if self.player.lives == 0 and not self.death_expl.alive():
+			#game over 
+			self.playing = False
+			for sprite in self.all_sprites:
+				sprite.kill() 
+		
 	def update(self):
   		#game loop update
 		self.all_sprites.update()
@@ -197,19 +207,10 @@ class Game:
 		self.enbullets_hit_player()
 		self.meteors_hit_player()
 		self.laser_hits_meteors()
-		self.level_1()
-
-
-
+		self.update_phase()
+		self.player_death()
 
 		
-		# if player died and explosion finished playing
-		if self.player.lives == 0 and not self.death_expl.alive():
-			#game over 
-			self.playing = False
-			for sprite in self.all_sprites:
-				sprite.kill() 
-	
 	def events(self):
   		#game loop - events
 		for event in pg.event.get():
@@ -224,7 +225,7 @@ class Game:
 		self.screen.blit(background, background_rect)
 		self.all_sprites.draw(self.screen)
 		#draw levels
-		self.draw_text(self.screen, "LEVEL: " + str(self.level), 18, WIDTH * 1.5 / 4, 10, WHITE)
+		self.draw_text(self.screen, "PHASE: " + str(self.phase), 18, WIDTH * 1.5 / 4, 10, WHITE)
 		self.draw_text(self.screen, "SCORE: " + str(self.score), 18, WIDTH * 2.5 / 4, 10, WHITE)
 		self.draw_shield_bar(self.screen, 5, 5, self.player.shield)
 		self.draw_lives(self.screen, WIDTH - 100, 5, self.player.lives, player_mini_img)
@@ -262,11 +263,12 @@ class Game:
 		self.draw_text(screen, "Click mouse to play again", 18, WIDTH / 2, HEIGHT * 3.6 / 4, WHITE)
 		pg.display.flip()
 		self.wait_for_key() 
-			
+
+
 g = Game()
 g.show_start_screen()
 while g.running:
-	g.new()
+	g.phase_0()
 	g.show_gameover_screen()
 pg.quit()
 	

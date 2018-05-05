@@ -134,6 +134,8 @@ class Enemy_1(pg.sprite.Sprite):
 			self.rect.x = random.randrange(WIDTH - self.rect.width)
 			self.rect.y = random.randrange(-100, -40)
 			self.speedy = random.randrange(1, 8)
+		if pg.time.get_ticks() >= 10000:
+  			self.kill()
 	
 	def shoot(self):
 		now = pg.time.get_ticks()
@@ -192,7 +194,6 @@ class Meteor(pg.sprite.Sprite):
 			self.speedy = random.randrange(1, 8)
 			if self.rect.top > HEIGHT or self.rect.left < WIDTH or self.rect.right > WIDTH:
   				self.kill()
-
 
 ####### BULLET CLASS #############
 class Bullet(pg.sprite.Sprite):
