@@ -28,6 +28,7 @@ class Game:
 		self.m = Meteor()
 		self.all_sprites.add(self.m)
 		meteors.add(self.m)
+		print("I'm working")
   	
 	def draw_text(self, surf, text, size, x, y, color):
 		self.font = pg.font.Font(font_name, size)
@@ -59,19 +60,16 @@ class Game:
 
 	def new(self):
 		self.all_sprites = all_sprites
-		# self.enemy_1s = pg.sprite.Group()
-		# self.enemy_1s = pg.sprite.Group()
-		# self.meteors = pg.sprite.Group()
-		self.player = Player()
-		self.all_sprites.add(self.player)
 		self.score = 0
 		self.level = 0 
+		self.player = Player()
+		self.all_sprites.add(self.player)
+		# for i in range(5):
+  		# 	# self.newenemy_1()
+		# 	self.newenemy_1()
 		for i in range(5):
-  			# self.newenemy_1()
-			self.newenemy_1()
-		for i in range(5):
-  			# self.newenemy_1()
 			self.newmeteors()
+			
 		self.run()
 	
 	def run(self):
@@ -169,7 +167,19 @@ class Game:
 			if hit.type == 'laser':
 				powerup_bolt_snd.play() 
 				self.player.powerup()
-  		
+
+	def level_1(self):
+		if self.score >= 300:
+			self.level = 1
+			
+		# self.hits = pg.sprite.groupcollide(enemy_1s, bullets, True, True)
+		# for hit in self.hits:
+		# 	if self.score >= 300:
+  		# 		print(self.score)
+				# self.level = 1
+				# print(self.level)
+				# self.newmeteors()
+				
 	def update(self):
   		#game loop update
 		self.all_sprites.update()
@@ -178,6 +188,8 @@ class Game:
 		self.power_hits_player()
 		self.e1_hits_player()
 		self.enbullets_hit_player()
+		self.meteors_hit_player()
+		self.level_1()
 		
 		# if player died and explosion finished playing
 		if self.player.lives == 0 and not self.death_expl.alive():
@@ -185,17 +197,7 @@ class Game:
 			self.playing = False
 			for sprite in self.all_sprites:
 				sprite.kill() 
-		
-		for hit in self.hits:
-			if self.score >= 500:
-				self.level = 1
-				self.meteors_hit_player()
-			if self.score >= 6000:
-  				self.level = 2
-			if self.score >= 9000:
-  				self.level = 3
 	
-
 	def events(self):
   		#game loop - events
 		for event in pg.event.get():
