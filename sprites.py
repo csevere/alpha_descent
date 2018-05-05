@@ -119,17 +119,12 @@ class Enemy_1(pg.sprite.Sprite):
 		self.rect.y = random.randrange(-150, -100)
 		self.speedy = random.randrange(1, 8)
 		self.speedx = random.randrange(-3, 3)
-		#how far in degree sprite should rotate
-		self.rot = 0
-		#have mod rotate in diff directions / how fast it rotates
-		self.rot_speed = random.randrange(-8, 8)
 		#grabs number of ticks since clock started 
 		self.last_update = pg.time.get_ticks()
 		self.shoot_delay = 500
 		self.last_shot = pg.time.get_ticks()
 
 	def update(self):
-		# self.rotate()
 		#makes it move downward 
 		self.shoot()
 		# enemy_shoot.play() 
@@ -170,29 +165,33 @@ class Meteor(pg.sprite.Sprite):
 		self.rot_speed = random.randrange(-8, 8)
 		#grabs number of ticks since clock started 
 		self.last_update = pg.time.get_ticks()
+		self.shoot_delay = 500
+		self.last_shot = pg.time.get_ticks()
 
-def rotate(self):
-	now = pg.time.get_ticks()
-	if now - self.last_update > 50:
-		self.last_update = now
-		#keep track of rotation, making it loop around
-		self.rot = (self.rot + self.rot_speed) % 360
-		new_image = pg.transform.rotate(self.image_orig, self.rot)
-		#change rectange shape and size and keep the sprite centered when rotating 
-		old_center = self.rect.center
-		self.image = new_image
-		self.rect = self.image.get_rect()
-		self.rect.center = old_center 
+	def rotate(self):
+		now = pg.time.get_ticks()
+		if now - self.last_update > 50:
+			self.last_update = now
+			#keep track of rotation, making it loop around
+			self.rot = (self.rot + self.rot_speed) % 360
+			new_image = pg.transform.rotate(self.image_orig, self.rot)
+			#change rectange shape and size and keep the sprite centered when rotating 
+			old_center = self.rect.center
+			self.image = new_image
+			self.rect = self.image.get_rect()
+			self.rect.center = old_center 
 
-def update(self):
-	self.rotate()
-	#makes it move downward 
-	self.rect.x += self.speedx 
-	self.rect.y += self.speedy
-	if self.rect.top > HEIGHT + 10 or self.rect.left < -25 or self.rect.right > WIDTH + 20:
-		self.rect.x = random.randrange(WIDTH - self.rect.width)
-		self.rect.y = random.randrange(-100, -40)
-		self.speedy = random.randrange(1, 8)
+	def update(self):
+		self.rotate()
+		#makes it move downward 
+		self.rect.x += self.speedx 
+		self.rect.y += self.speedy
+		if self.rect.top > HEIGHT + 10 or self.rect.left < -25 or self.rect.right > WIDTH + 20:
+			self.rect.x = random.randrange(WIDTH - self.rect.width)
+			self.rect.y = random.randrange(-100, -40)
+			self.speedy = random.randrange(1, 8)
+			if self.rect.top > HEIGHT or self.rect.left < WIDTH or self.rect.right > WIDTH:
+  				self.kill()
 
 
 ####### BULLET CLASS #############

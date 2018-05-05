@@ -56,9 +56,7 @@ for img in enemy_list:
 
 ###### METEORS
 meteor_images = []
-meteor_list = ['meteor_big1.png', 'meteor_big2.png', 'meteor_big3.png', 'meteor_big4.png', 
-				'meteor_med1.png', 'meteor_med3.png', 'meteor_small1.png', 'meteor_small2.png', 'meteor_tiny1.png', 
-				'meteor_tiny2.png']
+meteor_list = ['meteor_big1.png', 'meteor_med1.png']
 for img in meteor_list:
   	meteor_images.append(pg.image.load(path.join(meteors_dir, img)).convert())
 

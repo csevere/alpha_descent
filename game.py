@@ -28,7 +28,6 @@ class Game:
 		self.m = Meteor()
 		self.all_sprites.add(self.m)
 		meteors.add(self.m)
-		print("I'm working")
   	
 	def draw_text(self, surf, text, size, x, y, color):
 		self.font = pg.font.Font(font_name, size)
@@ -64,12 +63,9 @@ class Game:
 		self.level = 0 
 		self.player = Player()
 		self.all_sprites.add(self.player)
-		# for i in range(5):
-  		# 	# self.newenemy_1()
-		# 	self.newenemy_1()
 		for i in range(5):
-			self.newmeteors()
-			
+			self.newenemy_1()
+
 		self.run()
 	
 	def run(self):
@@ -138,6 +134,21 @@ class Game:
 			self.expl = Explosion(hit.rect.center, 'sm')
 			self.all_sprites.add(self.expl) 
 	
+	def laser_hits_meteors(self):
+		self.hits = pg.sprite.groupcollide(meteors, bullets, True, True)
+		#respawn the mob
+		for hit in self.hits:
+			self.score += 50 - hit.radius
+			#play random sound in list 
+			random.choice(expl_snds).play()
+			self.expl = Explosion(hit.rect.center, 'lg')
+			self.all_sprites.add(self.expl) 
+			if random.random() > 0.9:
+				self.power = Power(hit.rect.center)
+				self.all_sprites.add(self.power)
+				powerups.add(self.power)
+			self.newmeteors()
+		
 	def meteors_hit_player(self):
 		self.hits = pg.sprite.spritecollide(self.player, meteors, True, pg.sprite.collide_circle)
 		for hit in self.hits:
@@ -169,16 +180,13 @@ class Game:
 				self.player.powerup()
 
 	def level_1(self):
-		if self.score >= 300:
-			self.level = 1
-			
 		# self.hits = pg.sprite.groupcollide(enemy_1s, bullets, True, True)
 		# for hit in self.hits:
-		# 	if self.score >= 300:
-  		# 		print(self.score)
-				# self.level = 1
-				# print(self.level)
-				# self.newmeteors()
+		if self.score >= 300:
+			self.level = 1
+			enemy_1s.kill()
+			if random.random() > 0.9:
+				self.newmeteors()
 				
 	def update(self):
   		#game loop update
@@ -189,7 +197,12 @@ class Game:
 		self.e1_hits_player()
 		self.enbullets_hit_player()
 		self.meteors_hit_player()
+		self.laser_hits_meteors()
 		self.level_1()
+
+
+
+
 		
 		# if player died and explosion finished playing
 		if self.player.lives == 0 and not self.death_expl.alive():
