@@ -9,6 +9,7 @@ enemy_1s = pg.sprite.Group()
 bullets = pg.sprite.Group() 
 en_bullets = pg.sprite.Group()
 powerups = pg.sprite.Group()
+meteors = pg.sprite.Group()
 
 ####### PLAYER CLASS #############
 class Player(pg.sprite.Sprite):
@@ -118,6 +119,46 @@ class Enemy_1(pg.sprite.Sprite):
 		self.rect.y = random.randrange(-150, -100)
 		self.speedy = random.randrange(1, 8)
 		self.speedx = random.randrange(-3, 3)
+		#grabs number of ticks since clock started 
+		self.last_update = pg.time.get_ticks()
+		self.shoot_delay = 500
+		self.last_shot = pg.time.get_ticks()
+
+	def update(self):
+		#makes it move downward 
+		self.shoot()
+		# enemy_shoot.play() 
+		self.rect.x += self.speedx 
+		self.rect.y += self.speedy
+		if self.rect.top > HEIGHT + 10 or self.rect.left < -25 or self.rect.right > WIDTH + 20:
+			self.rect.x = random.randrange(WIDTH - self.rect.width)
+			self.rect.y = random.randrange(-100, -40)
+			self.speedy = random.randrange(1, 8)
+	
+	def shoot(self):
+		now = pg.time.get_ticks()
+		if now - self.last_shot > self.shoot_delay:
+			self.last_shot = now
+			en_bullet = Bullet(self.rect.centerx, self.rect.bottom + 10, enemy_laser_img, 10)
+			all_sprites.add(en_bullet)
+			en_bullets.add(en_bullet)
+			# enemy_shoot.play()
+
+####### METEOR CLASS #############
+class Meteor(pg.sprite.Sprite):
+	def __init__(self):
+		pg.sprite.Sprite.__init__(self)
+		self.image_orig = random.choice(meteor_images)
+		self.image_orig.set_colorkey(BLACK)
+		self.image = self.image_orig.copy()
+		self.rect = self.image.get_rect()
+		# find the width of rectangle / 2
+		self.radius = int(self.rect.width * .85/ 2)
+		# pg.draw.circle(self.image, RED, self.rect.center, self.radius)
+		self.rect.x = random.randrange(WIDTH - self.rect.width)
+		self.rect.y = random.randrange(-150, -100)
+		self.speedy = random.randrange(1, 8)
+		self.speedx = random.randrange(-3, 3)
 		#how far in degree sprite should rotate
 		self.rot = 0
 		#have mod rotate in diff directions / how fast it rotates
@@ -141,25 +182,17 @@ class Enemy_1(pg.sprite.Sprite):
 			self.rect.center = old_center 
 
 	def update(self):
-		# self.rotate()
+		self.rotate()
 		#makes it move downward 
-		self.shoot()
-		# enemy_shoot.play() 
 		self.rect.x += self.speedx 
 		self.rect.y += self.speedy
 		if self.rect.top > HEIGHT + 10 or self.rect.left < -25 or self.rect.right > WIDTH + 20:
 			self.rect.x = random.randrange(WIDTH - self.rect.width)
 			self.rect.y = random.randrange(-100, -40)
 			self.speedy = random.randrange(1, 8)
-	
-	def shoot(self):
-		now = pg.time.get_ticks()
-		if now - self.last_shot > self.shoot_delay:
-			self.last_shot = now
-			en_bullet = Bullet(self.rect.centerx, self.rect.bottom + 10, enemy_laser_img, 10)
-			all_sprites.add(en_bullet)
-			en_bullets.add(en_bullet)
-			# enemy_shoot.play()
+			if self.rect.top > HEIGHT or self.rect.left < WIDTH or self.rect.right > WIDTH:
+  				self.kill()
+
 
 ####### BULLET CLASS #############
 class Bullet(pg.sprite.Sprite):

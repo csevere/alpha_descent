@@ -19,15 +19,15 @@ class Game:
 		self.running = True 
 		self.game_over = True 
 
-	# def newmob(self):
-	# 	self.m = Mob()
-	# 	self.all_sprites.add(self.m)
-	# 	enemy_1s.add(self.m)
-
 	def newenemy_1(self):
 		self.e1 = Enemy_1()
 		self.all_sprites.add(self.e1)
 		enemy_1s.add(self.e1)
+
+	def newmeteors(self):
+		self.m = Meteor()
+		self.all_sprites.add(self.m)
+		meteors.add(self.m)
   	
 	def draw_text(self, surf, text, size, x, y, color):
 		self.font = pg.font.Font(font_name, size)
@@ -59,15 +59,13 @@ class Game:
 
 	def new(self):
 		self.all_sprites = all_sprites
-		# self.enemy_1s = pg.sprite.Group()
-		self.enemy_1s = pg.sprite.Group()
-		self.player = Player()
-		self.all_sprites.add(self.player)
 		self.score = 0
 		self.level = 0 
+		self.player = Player()
+		self.all_sprites.add(self.player)
 		for i in range(5):
-  			# self.newenemy_1()
 			self.newenemy_1()
+
 		self.run()
 	
 	def run(self):
@@ -79,10 +77,7 @@ class Game:
 			self.update()
 			self.draw()
 	
-	def update(self):
-  		#game loop update
-		self.all_sprites.update()
-		##### PLAYER HIT MOB / true for both so both get deleted ###########
+	def laser_hits_e1(self):
 		self.hits = pg.sprite.groupcollide(enemy_1s, bullets, True, True)
 		#respawn the mob
 		for hit in self.hits:
@@ -96,31 +91,8 @@ class Game:
 				self.all_sprites.add(self.power)
 				powerups.add(self.power)
 			self.newenemy_1()
-
-		#player's bullets hit mob bullets 
-		self.hits = pg.sprite.groupcollide(en_bullets, bullets, True, True)
-		#respawn the mob
-		for hit in self.hits:
-			self.score += 70 
-			#play random sound in list 
-			random.choice(expl_snds).play()
-			self.expl = Explosion(hit.rect.center, 'sm')
-			self.all_sprites.add(self.expl) 
-		
-		#####POWERUPS HIT PLAYER ##################
-		self.hits = pg.sprite.spritecollide(self.player, powerups, True)
-		for hit in self.hits:
-			if hit.type == 'shield':
-				powerup_shield_snd.play()
-				self.player.shield += random.randrange(10, 30)
-				if self.player.shield >= 100:
-					self.player.shield = 100
-
-			if hit.type == 'laser':
-				powerup_bolt_snd.play() 
-				self.player.powerup()
-				
-		##### MOB HIT PLAYER / circle specifies type of collision ##########
+	
+	def e1_hits_player(self):
 		self.hits = pg.sprite.spritecollide(self.player, enemy_1s, True, pg.sprite.collide_circle)
 		for hit in self.hits:
 			random.choice(expl_snds).play()
@@ -135,7 +107,8 @@ class Game:
 				self.player.hide()
 				self.player.lives -= 1
 				self.player.shield = 100
-
+	
+	def enbullets_hit_player(self):
 		self.hits = pg.sprite.spritecollide(self.player, en_bullets, True, pg.sprite.collide_circle)
 		for hit in self.hits:
 			random.choice(expl_snds).play()
@@ -150,22 +123,93 @@ class Game:
 				self.player.lives -= 1
 				self.player.shield = 100
 		
+	def laser_hits_enbullets(self):
+  		#player's bullets hit mob bullets 
+		self.hits = pg.sprite.groupcollide(en_bullets, bullets, True, True)
+		#respawn the mob
+		for hit in self.hits:
+			self.score += 70 
+			#play random sound in list 
+			random.choice(expl_snds).play()
+			self.expl = Explosion(hit.rect.center, 'sm')
+			self.all_sprites.add(self.expl) 
+	
+	def laser_hits_meteors(self):
+		self.hits = pg.sprite.groupcollide(meteors, bullets, True, True)
+		#respawn the mob
+		for hit in self.hits:
+			self.score += 50 - hit.radius
+			#play random sound in list 
+			random.choice(expl_snds).play()
+			self.expl = Explosion(hit.rect.center, 'lg')
+			self.all_sprites.add(self.expl) 
+			if random.random() > 0.9:
+				self.power = Power(hit.rect.center)
+				self.all_sprites.add(self.power)
+				powerups.add(self.power)
+			self.newmeteors()
+		
+	def meteors_hit_player(self):
+		self.hits = pg.sprite.spritecollide(self.player, meteors, True, pg.sprite.collide_circle)
+		for hit in self.hits:
+			random.choice(expl_snds).play()
+			self.player.shield -= hit.radius * 2
+			self.expl = Explosion(hit.rect.center, 'sm')
+			self.all_sprites.add(self.expl)
+			self.newmeteors()
+			if self.player.shield <= 0:
+				player_death_snd.play() 
+				self.death_expl = Explosion(self.player.rect.center, 'player')
+				all_sprites.add(self.death_expl)
+				self.player.hide()
+				self.player.lives -= 1
+				self.player.shield = 100
+
+	def power_hits_player(self):
+  		#####POWERUPS HIT PLAYER ##################
+		self.hits = pg.sprite.spritecollide(self.player, powerups, True)
+		for hit in self.hits:
+			if hit.type == 'shield':
+				powerup_shield_snd.play()
+				self.player.shield += random.randrange(10, 30)
+				if self.player.shield >= 100:
+					self.player.shield = 100
+
+			if hit.type == 'laser':
+				powerup_bolt_snd.play() 
+				self.player.powerup()
+
+	def level_1(self):
+		# self.hits = pg.sprite.groupcollide(enemy_1s, bullets, True, True)
+		# for hit in self.hits:
+		if self.score >= 300:
+			self.level = 1
+			if random.random() > 0.9:
+				self.newmeteors()
+				
+	def update(self):
+  		#game loop update
+		self.all_sprites.update()
+		self.laser_hits_e1()
+		self.laser_hits_enbullets()
+		self.power_hits_player()
+		self.e1_hits_player()
+		self.enbullets_hit_player()
+		self.meteors_hit_player()
+		self.laser_hits_meteors()
+		self.level_1()
+
+
+
+
+		
 		# if player died and explosion finished playing
 		if self.player.lives == 0 and not self.death_expl.alive():
 			#game over 
 			self.playing = False
 			for sprite in self.all_sprites:
 				sprite.kill() 
-		
-		for hit in self.hits:
-			if self.score >= 3000:
-				self.level = 1
-			if self.score >= 6000:
-  				self.level = 2
-			if self.score >= 9000:
-  				self.level = 3
 	
-
 	def events(self):
   		#game loop - events
 		for event in pg.event.get():
