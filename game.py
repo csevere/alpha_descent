@@ -18,12 +18,17 @@ class Game:
 		self.clock = pg.time.Clock()
 		self.running = True 
 		self.game_over = True 
-
+  		
 	def newenemy_1(self):
 		self.e1 = Enemy_1()
 		self.all_sprites.add(self.e1)
 		enemy_1s.add(self.e1)
 
+	def newenemy_2(self):
+		self.e2 = Enemy_2()
+		self.all_sprites.add(self.e2)
+		enemy_2s.add(self.e2)
+	
 	def newmeteors(self):
 		self.m = Meteor()
 		self.all_sprites.add(self.m)
@@ -57,7 +62,7 @@ class Game:
 			self.img_rect.y = y
 			surf.blit(img, self.img_rect)
 
-	def phase_0(self):
+	def new(self):
 		self.all_sprites = all_sprites
 		self.score = 0
 		self.phase = 0 
@@ -70,15 +75,11 @@ class Game:
 	def run(self):
 		#game loop
 		self.playing = True
-		self.phase1 = False
-		self.phase2 = False
-		self.phase3 = False 
 		while self.playing:
 			self.clock.tick(FPS)
 			self.events()
 			self.update()
 			self.draw()
-	
 	
 	def laser_hits_e1(self):
 		self.hits = pg.sprite.groupcollide(enemy_1s, bullets, True, True)
@@ -94,7 +95,21 @@ class Game:
 				self.all_sprites.add(self.power)
 				powerups.add(self.power)
 			self.newenemy_1()
-	
+
+	def laser_hits_e2(self):
+		self.hits = pg.sprite.groupcollide(enemy_2s, bullets, True, True)
+		#respawn the mob
+		for hit in self.hits:
+			self.score += 50 - hit.radius
+			#play random sound in list 
+			random.choice(expl_snds).play()
+			self.expl = Explosion(hit.rect.center, 'lg')
+			self.all_sprites.add(self.expl) 
+			if random.random() > 0.9:
+				self.power = Power(hit.rect.center)
+				self.all_sprites.add(self.power)
+				powerups.add(self.power)
+			
 	def e1_hits_player(self):
 		self.hits = pg.sprite.spritecollide(self.player, enemy_1s, True, pg.sprite.collide_circle)
 		for hit in self.hits:
@@ -103,6 +118,22 @@ class Game:
 			self.expl = Explosion(hit.rect.center, 'sm')
 			self.all_sprites.add(self.expl) 
 			self.newenemy_1()
+			if self.player.shield <= 0:
+				player_death_snd.play() 
+				self.death_expl = Explosion(self.player.rect.center, 'player')
+				all_sprites.add(self.death_expl)
+				self.player.hide()
+				self.player.lives -= 1
+				self.player.shield = 100
+
+	def e2_hits_player(self):
+		self.hits = pg.sprite.spritecollide(self.player, enemy_2s, True, pg.sprite.collide_circle)
+		for hit in self.hits:
+			random.choice(expl_snds).play()
+			self.player.shield -= hit.radius * 2
+			self.expl = Explosion(hit.rect.center, 'sm')
+			self.all_sprites.add(self.expl) 
+			self.newenemy_2()
 			if self.player.shield <= 0:
 				player_death_snd.play() 
 				self.death_expl = Explosion(self.player.rect.center, 'player')
@@ -125,6 +156,21 @@ class Game:
 				self.player.hide()
 				self.player.lives -= 1
 				self.player.shield = 100
+
+	def enbullets2_hit_player(self):
+		self.hits = pg.sprite.spritecollide(self.player, en2_bullets, True, pg.sprite.collide_circle)
+		for hit in self.hits:
+			random.choice(expl_snds).play()
+			self.player.shield -= 2
+			self.expl = Explosion(hit.rect.center, 'sm')
+			self.all_sprites.add(self.expl) 
+			if self.player.shield <= 0:
+				player_death_snd.play() 
+				self.death_expl = Explosion(self.player.rect.center, 'player')
+				self.all_sprites.add(self.death_expl)
+				self.player.hide()
+				self.player.lives -= 1
+				self.player.shield = 100
 		
 	def laser_hits_enbullets(self):
   		#player's bullets hit mob bullets 
@@ -132,6 +178,17 @@ class Game:
 		#respawn the mob
 		for hit in self.hits:
 			self.score += 70 
+			#play random sound in list 
+			random.choice(expl_snds).play()
+			self.expl = Explosion(hit.rect.center, 'sm')
+			self.all_sprites.add(self.expl) 
+
+	def laser_hits_en2bullets(self):
+		#player's bullets hit mob bullets 
+		self.hits = pg.sprite.groupcollide(en2_bullets, bullets, True, True)
+		#respawn the mob
+		for hit in self.hits:
+			self.score += 90 
 			#play random sound in list 
 			random.choice(expl_snds).play()
 			self.expl = Explosion(hit.rect.center, 'sm')
@@ -183,12 +240,16 @@ class Game:
 				self.player.powerup()
 
 	def update_phase(self):
-		if pg.time.get_ticks() >= 10000:
-			self.phase = 1
-			self.show_phase1_screen
-			if random.random() > 0.8:
-  				self.newmeteors()
-			
+		if self.playing:
+			if pg.time.get_ticks() >= 10000:
+				self.phase = 1
+				if random.random() > 0.8:
+					self.newmeteors()
+			if pg.time.get_ticks() >= 20000:
+				self.phase = 2
+				if random.random() > 0.9:
+					self.newenemy_2()
+
 	def player_death(self):
   		# if player died and explosion finished playing
 		if self.player.lives == 0 and not self.death_expl.alive():
@@ -201,15 +262,18 @@ class Game:
   		#game loop update
 		self.all_sprites.update()
 		self.laser_hits_e1()
+		self.laser_hits_e2()
 		self.laser_hits_enbullets()
+		self.laser_hits_en2bullets()
 		self.power_hits_player()
 		self.e1_hits_player()
+		self.e2_hits_player()
 		self.enbullets_hit_player()
+		self.enbullets2_hit_player()
 		self.meteors_hit_player()
 		self.laser_hits_meteors()
 		self.update_phase()
 		self.player_death()
-
 		
 	def events(self):
   		#game loop - events
@@ -268,7 +332,7 @@ class Game:
 g = Game()
 g.show_start_screen()
 while g.running:
-	g.phase_0()
+	g.new()
 	g.show_gameover_screen()
 pg.quit()
 	
