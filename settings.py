@@ -5,6 +5,7 @@ pg.init()
 pg.mixer.init()
 
 
+
 #GAME OPTIONS AND SETTINGS
 TITLE = "ALPHA DESCENT"
 WIDTH = 480
@@ -41,18 +42,22 @@ player_mini_img = pg.transform.scale(player_img, (25, 19))
 player_mini_img.set_colorkey(BLACK)
 laser_img = pg.image.load(path.join(img_dir, "laser_green.png")).convert()
 p_laser_img = pg.image.load(path.join(img_dir, "laserBlue02.png")).convert()
-enemy_laser_img = pg.image.load(path.join(enemy_dir, "laserRed02.png")).convert()
+enemy_laser_img = pg.image.load(path.join(enemy_dir, "laserRed01.png")).convert()
 ###### POWERUPS
 powerup_images = {}
 powerup_images['shield'] = pg.image.load(path.join(img_dir, "shield_gold.png")).convert()
 powerup_images['laser'] = pg.image.load(path.join(img_dir, "bolt_gold.png")).convert()
 ##### ENEMIES
+laser_ball = pg.image.load(path.join(enemy_dir, "laser_ball.png")).convert() 
 enemy_images = []
 enemy_list = [	'enemyBlack1.png', 'enemyBlack4.png', 'enemyBlue1.png', 'enemyBlue4.png', 
 				'enemyGreen1.png', 'enemyGreen4.png', 'enemyRed1.png', 'enemyRed4.png',  
 			]
 for img in enemy_list:
   	enemy_images.append(pg.image.load(path.join(enemy_dir, img)).convert())
+
+enemy2_img = pg.image.load(path.join(enemy_dir, "ufoRed.png")).convert()
+boss_img = pg.image.load(path.join(enemy_dir, "boss_ship.png")).convert()
 
 ###### METEORS
 meteor_images = []

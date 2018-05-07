@@ -1,13 +1,17 @@
 #Sprite classes for game
 import pygame as pg
+import math 
 import random 
 from settings import *
 from os import path 
 
 all_sprites = pg.sprite.Group()
 enemy_1s = pg.sprite.Group()
+enemy_2s = pg.sprite.Group()
 bullets = pg.sprite.Group() 
 en_bullets = pg.sprite.Group()
+en2_bullets = pg.sprite.Group()
+en_laser_balls = pg.sprite.Group()
 powerups = pg.sprite.Group()
 meteors = pg.sprite.Group()
 
@@ -24,7 +28,7 @@ class Player(pg.sprite.Sprite):
 		self.radius = 20
 		#draw a circle on top of the image
 		# pg.draw.circle(self.image, RED, self.rect.center, self.radius)
-		self.rect.centerx = WIDTH/2
+		self.rect.centerx = WIDTH / 2
 		self.rect.bottom = HEIGHT - 10
 		self.speedx = 0
 		self.speedy = 0
@@ -141,11 +145,53 @@ class Enemy_1(pg.sprite.Sprite):
 		now = pg.time.get_ticks()
 		if now - self.last_shot > self.shoot_delay:
 			self.last_shot = now
-			en_bullet = Bullet(self.rect.centerx, self.rect.bottom + 10, enemy_laser_img, 10)
+			en_bullet = Bullet(self.rect.centerx, self.rect.bottom + 25, enemy_laser_img, 10)
 			all_sprites.add(en_bullet)
 			en_bullets.add(en_bullet)
-			# enemy_shoot.play()
 
+####### Enemy_2 CLASS #############
+class Enemy_2(pg.sprite.Sprite):
+	def __init__(self):
+		pg.sprite.Sprite.__init__(self)
+		self.image_orig = enemy2_img
+		self.image_orig.set_colorkey(BLACK)
+		self.image = self.image_orig.copy()
+		self.rect = self.image.get_rect()
+		# find the width of rectangle / 2
+		self.radius = int(self.rect.width * .85/ 2)
+		# pg.draw.circle(self.image, RED, self.rect.center, self.radius)
+		self.rect.x = random.randrange(WIDTH - self.rect.width)
+		self.rect.y = random.randrange(-200, -150)
+		self.speedy = random.randrange(5, 15)
+		self.speedx = random.randrange(-3, 4)
+		#grabs number of ticks since clock started 
+		self.last_update = pg.time.get_ticks()
+		self.shoot_delay = 300
+		self.last_shot = pg.time.get_ticks()
+
+	def update(self):
+		#makes it move downward 
+		self.shoot()
+		# enemy_shoot.play() 
+		self.rect.x += self.speedx 
+		self.rect.y += self.speedy
+		if self.rect.top > HEIGHT + 10 or self.rect.left < -25 or self.rect.right > WIDTH + 20:
+			self.rect.x = random.randrange(WIDTH - self.rect.width)
+			self.rect.y = random.randrange(-100, -40)
+			self.speedy = random.randrange(1, 8)
+			if self.rect.top > HEIGHT or self.rect.left < WIDTH or self.rect.right > WIDTH:
+  				self.kill()
+		# if pg.time.get_ticks() >= 30000:
+		# 	self.kill()
+	
+	def shoot(self):
+		now = pg.time.get_ticks()
+		if now - self.last_shot > self.shoot_delay:
+			self.last_shot = now
+			en2_bullet = Bullet(self.rect.centerx, self.rect.bottom + 25, laser_ball, 10)
+			all_sprites.add(en2_bullet)
+			en2_bullets.add(en2_bullet)
+			
 ####### METEOR CLASS #############
 class Meteor(pg.sprite.Sprite):
 	def __init__(self):
@@ -194,6 +240,8 @@ class Meteor(pg.sprite.Sprite):
 			self.speedy = random.randrange(1, 8)
 			if self.rect.top > HEIGHT or self.rect.left < WIDTH or self.rect.right > WIDTH:
   				self.kill()
+		if pg.time.get_ticks() >= 20000:
+  			self.kill()
 
 ####### BULLET CLASS #############
 class Bullet(pg.sprite.Sprite):
