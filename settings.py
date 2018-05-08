@@ -4,13 +4,22 @@ from os import path
 pg.init()
 pg.mixer.init()
 
-
+#TIMER 
+global COUNTER
+timer = pg.time.set_timer(pg.USEREVENT, 1000) 
+COUNTER = 10
+timer_text = ':10'.rjust(3) 
+timer_str = str(COUNTER).rjust(3)
 
 #GAME OPTIONS AND SETTINGS
 TITLE = "ALPHA DESCENT"
 WIDTH = 480
 HEIGHT = 800
-FPS = 300
+FPS = 60
+#frame count
+FC = 0
+#start time
+ST = 90
 POWERUP_TIME = 5000
 
 screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -65,8 +74,6 @@ meteor_list = ['meteor_big1.png', 'meteor_med1.png']
 for img in meteor_list:
   	meteor_images.append(pg.image.load(path.join(meteors_dir, img)).convert())
 
-
-
 #EXPLOSIONS: create dic with lists, load, scale igs
 explosion_anim = {}
 explosion_anim['lg'] = []
@@ -105,4 +112,7 @@ for snd in ['Expl3.wav','Expl4.wav', 'Expl6.wav']:
 pg.mixer.music.set_volume(0.4)
 
 ##PLAY BG Music / loops =-1 plays music over again##
-pg.mixer.music.play(loops=-1)
+# pg.mixer.music.play(loops=-1)
+
+
+

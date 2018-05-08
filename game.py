@@ -17,7 +17,11 @@ class Game:
 		pg.display.set_caption(TITLE)
 		self.clock = pg.time.Clock()
 		self.running = True 
-		self.game_over = True 
+		self.game_over = True
+		self.counter = 300
+		# self.text = '10'.rjust(3) 
+		self.timer = pg.time.set_timer(pg.USEREVENT, 1000)
+		self.timer_str = ""
   		
 	def newenemy_1(self):
 		self.e1 = Enemy_1()
@@ -241,12 +245,16 @@ class Game:
 
 	def update_phase(self):
 		if self.playing:
-			if pg.time.get_ticks() >= 10000:
+			if self.counter <= 280:
 				self.phase = 1
+				for sprite in enemy_1s:
+					sprite.kill() 
 				if random.random() > 0.8:
 					self.newmeteors()
-			if pg.time.get_ticks() >= 20000:
+			if self.counter <= 260:
 				self.phase = 2
+				for sprite in meteors:
+  					sprite.kill() 
 				if random.random() > 0.9:
 					self.newenemy_2()
 
@@ -257,10 +265,12 @@ class Game:
 			self.playing = False
 			for sprite in self.all_sprites:
 				sprite.kill() 
+			self.counter = 300 
 		
 	def update(self):
   		#game loop update
 		self.all_sprites.update()
+		# self.timer()
 		self.laser_hits_e1()
 		self.laser_hits_e2()
 		self.laser_hits_enbullets()
@@ -278,6 +288,14 @@ class Game:
 	def events(self):
   		#game loop - events
 		for event in pg.event.get():
+			if event.type == pg.USEREVENT:
+				self.counter -= 1
+				self.timer_str = str(self.counter).rjust(3)
+				if self.counter == 0: 
+					self.playing = False 
+					for sprite in self.all_sprites:
+  						sprite.kill() 
+					self.counter = 300
 			if event.type == pg.QUIT:
 				if self.playing:
 					self.playing = False
@@ -289,8 +307,9 @@ class Game:
 		self.screen.blit(background, background_rect)
 		self.all_sprites.draw(self.screen)
 		#draw levels
-		self.draw_text(self.screen, "PHASE: " + str(self.phase), 18, WIDTH * 1.5 / 4, 10, WHITE)
-		self.draw_text(self.screen, "SCORE: " + str(self.score), 18, WIDTH * 2.5 / 4, 10, WHITE)
+		self.draw_text(self.screen, "PHASE: " + str(self.phase), 18, WIDTH * 1.3 / 4, 10, WHITE)
+		self.draw_text(self.screen, self.timer_str, 18, WIDTH * 1 / 2, 10, WHITE)
+		self.draw_text(self.screen, "SCORE: " + str(self.score), 18, WIDTH * 2.7 / 4, 10, WHITE)
 		self.draw_shield_bar(self.screen, 5, 5, self.player.shield)
 		self.draw_lives(self.screen, WIDTH - 100, 5, self.player.lives, player_mini_img)
 		pg.display.flip()
