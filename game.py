@@ -8,18 +8,19 @@ from settings import *
 from sprites import * 
 from os import path    
 
+
+
 class Game:
 	def __init__(self):
 		#initalize game window
 		pg.init()
 		pg.mixer.init()
-		self.screen = pg.display.set_mode((WIDTH, HEIGHT))
+		self.screen = screen
 		pg.display.set_caption(TITLE)
 		self.clock = pg.time.Clock()
 		self.running = True 
 		self.game_over = True
 		self.counter = 300
-		# self.text = '10'.rjust(3) 
 		self.timer = pg.time.set_timer(pg.USEREVENT, 1000)
 		self.timer_str = ""
   		
@@ -37,7 +38,12 @@ class Game:
 		self.m = Meteor()
 		self.all_sprites.add(self.m)
 		meteors.add(self.m)
-  	
+	
+	def newguide(self):
+		self.gui = Guide()
+		self.all_sprites.add(self.gui)
+		guides.add(self.gui)
+
 	def draw_text(self, surf, text, size, x, y, color):
 		self.font = pg.font.Font(font_name, size)
 		#true means anti-aliased
@@ -46,12 +52,12 @@ class Game:
 		self.text_rect.midtop = (x, y)
 		surf.blit(self.text_surface, self.text_rect)
 	
-	def draw_shield_bar(self,surf, x, y, pct):
-		if pct < 0:
-			pct = 0
+	def draw_shield_bar(self,surf, x, y, hp):
+		if hp < 0:
+			hp = 0
 		self.BAR_LENGTH = 100
 		self.BAR_HEIGHT = 10
-		self.fill = (pct / 100) * self.BAR_LENGTH 
+		self.fill = (hp / 100) * self.BAR_LENGTH 
 		self.outline_rect = pg.Rect(x, y, self.BAR_LENGTH, self.BAR_HEIGHT)
 		self.fill_rect = pg.Rect( x, y, self.fill, self.BAR_HEIGHT)
 		pg.draw.rect(surf, GREEN, self.fill_rect)
@@ -245,18 +251,26 @@ class Game:
 
 	def update_phase(self):
 		if self.playing:
-			if self.counter <= 280:
+			if self.counter <= 290:
 				self.phase = 1
 				for sprite in enemy_1s:
 					sprite.kill() 
 				if random.random() > 0.8:
 					self.newmeteors()
-			if self.counter <= 260:
+				self.newguide()
+				if pg.time.get_ticks() > 15000:
+					for sprite in guides:
+						sprite.kill() 
+			if self.counter <= 280:
 				self.phase = 2
 				for sprite in meteors:
   					sprite.kill() 
 				if random.random() > 0.9:
 					self.newenemy_2()
+				self.newguide()
+				if pg.time.get_ticks() > 25000:
+					for sprite in guides:
+						sprite.kill() 
 
 	def player_death(self):
   		# if player died and explosion finished playing
@@ -270,7 +284,6 @@ class Game:
 	def update(self):
   		#game loop update
 		self.all_sprites.update()
-		# self.timer()
 		self.laser_hits_e1()
 		self.laser_hits_e2()
 		self.laser_hits_enbullets()
@@ -292,9 +305,11 @@ class Game:
 				self.counter -= 1
 				self.timer_str = str(self.counter).rjust(3)
 				if self.counter == 0: 
+					#show game over screen
 					self.playing = False 
 					for sprite in self.all_sprites:
-  						sprite.kill() 
+  						sprite.kill()
+					#reset timer
 					self.counter = 300
 			if event.type == pg.QUIT:
 				if self.playing:
@@ -306,7 +321,6 @@ class Game:
 		self.screen.fill(BLACK)
 		self.screen.blit(background, background_rect)
 		self.all_sprites.draw(self.screen)
-		#draw levels
 		self.draw_text(self.screen, "PHASE: " + str(self.phase), 18, WIDTH * 1.3 / 4, 10, WHITE)
 		self.draw_text(self.screen, self.timer_str, 18, WIDTH * 1 / 2, 10, WHITE)
 		self.draw_text(self.screen, "SCORE: " + str(self.score), 18, WIDTH * 2.7 / 4, 10, WHITE)
@@ -324,7 +338,7 @@ class Game:
 					self.running = False
 				if event.type == pg.MOUSEBUTTONDOWN:
 					waiting = False
-			
+	
 	def show_start_screen(self):
 		#game splash/start screen
 		self.screen.blit(start_screen, start_screen_rect)
@@ -346,7 +360,6 @@ class Game:
 		self.draw_text(screen, "Click mouse to play again", 18, WIDTH / 2, HEIGHT * 3.6 / 4, WHITE)
 		pg.display.flip()
 		self.wait_for_key() 
-
 
 g = Game()
 g.show_start_screen()
