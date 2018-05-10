@@ -4,22 +4,11 @@ from os import path
 pg.init()
 pg.mixer.init()
 
-#TIMER 
-global COUNTER
-timer = pg.time.set_timer(pg.USEREVENT, 1000) 
-COUNTER = 10
-timer_text = ':10'.rjust(3) 
-timer_str = str(COUNTER).rjust(3)
-
 #GAME OPTIONS AND SETTINGS
 TITLE = "ALPHA DESCENT"
 WIDTH = 480
 HEIGHT = 800
-FPS = 60
-#frame count
-FC = 0
-#start time
-ST = 90
+FPS = 300
 POWERUP_TIME = 5000
 
 screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -52,6 +41,7 @@ player_mini_img.set_colorkey(BLACK)
 laser_img = pg.image.load(path.join(img_dir, "laser_green.png")).convert()
 p_laser_img = pg.image.load(path.join(img_dir, "laserBlue02.png")).convert()
 enemy_laser_img = pg.image.load(path.join(enemy_dir, "laserRed01.png")).convert()
+guide = pg.image.load(path.join(img_dir, "guide.png")).convert()
 ###### POWERUPS
 powerup_images = {}
 powerup_images['shield'] = pg.image.load(path.join(img_dir, "shield_gold.png")).convert()
