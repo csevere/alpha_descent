@@ -14,9 +14,8 @@ en2_bullets = pg.sprite.Group()
 en_laser_balls = pg.sprite.Group()
 powerups = pg.sprite.Group()
 meteors = pg.sprite.Group()
-guides = pg.sprite.Group()
-i_ts = pg.sprite.Group()
-
+# guides = pg.sprite.Group()
+# i_ts = pg.sprite.Group()
 
 ####### PLAYER CLASS #############
 class Player(pg.sprite.Sprite):
@@ -110,36 +109,6 @@ class Player(pg.sprite.Sprite):
 		self.hide_timer = pg.time.get_ticks()
 		#hiding ship below the screen 
 		self.rect.center = (WIDTH / 2, HEIGHT + 200)
-
-####### GUIDE CLASS ##############
-class Guide(pg.sprite.Sprite):
-	def __init__(self):
-		pg.sprite.Sprite.__init__(self)
-		self.image = guide
-		self.image.set_colorkey(BLACK)
-		self.rect = self.image.get_rect()
-		# find the width of rectangle / 2
-		self.radius = int(self.rect.width * .85/ 2)
-		# pg.draw.circle(self.image, RED, self.rect.center, self.radius)
-		self.rect.y = (HEIGHT - 200)
-		self.rect.x = (WIDTH * .15)
-
-	def update(self):
-		i_t = Image_Text(self.rect.centerx, self.rect.bottom + 25, enemy_laser_img)
-		all_sprites.add(i_t)
-		i_ts.add(i_t)
-
-####### IMAGE TEXT #############
-class Image_Text(pg.sprite.Sprite):
-  	#tell bullet to spawn at particular loc according to player
-	def __init__(self, x, y, img):
-		pg.sprite.Sprite.__init__(self)
-		# self.image = laser_img
-		self.image = img
-		self.image.set_colorkey(BLACK)
-		self.rect = self.image.get_rect()
-		self.rect.bottom = y
-		self.rect.centerx = x
 
 ####### Enemy_1 CLASS #############
 class Enemy_1(pg.sprite.Sprite):
@@ -340,3 +309,35 @@ class Explosion(pg.sprite.Sprite):
 				self.image = explosion_anim[self.size][self.frame]
 				self.rect = self.image.get_rect()
 				self.rect.center = center
+
+
+
+# ####### GUIDE CLASS ##############
+# class Guide(pg.sprite.Sprite):
+# 	def __init__(self):
+# 		pg.sprite.Sprite.__init__(self)
+# 		self.image = guide
+# 		self.image.set_colorkey(BLACK)
+# 		self.rect = self.image.get_rect()
+# 		# find the width of rectangle / 2
+# 		self.radius = int(self.rect.width * .85/ 2)
+# 		# pg.draw.circle(self.image, RED, self.rect.center, self.radius)
+# 		self.rect.y = (HEIGHT - 200)
+# 		self.rect.x = (WIDTH * .15)
+
+# 	def update(self):
+# 		i_t = Image_Text(self.rect.centerx, self.rect.bottom + 25, enemy_laser_img)
+# 		all_sprites.add(i_t)
+# 		i_ts.add(i_t)
+
+# ####### IMAGE TEXT #############
+# class Image_Text(pg.sprite.Sprite):
+#   	#tell bullet to spawn at particular loc according to player
+# 	def __init__(self, x, y, img):
+# 		pg.sprite.Sprite.__init__(self)
+# 		# self.image = laser_img
+# 		self.image = img
+# 		self.image.set_colorkey(BLACK)
+# 		self.rect = self.image.get_rect()
+# 		self.rect.bottom = y
+# 		self.rect.centerx = x

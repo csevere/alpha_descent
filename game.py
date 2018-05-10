@@ -34,15 +34,20 @@ class Game:
 		self.all_sprites.add(self.e2)
 		enemy_2s.add(self.e2)
 	
+	def newboss(self):
+  		self.b = Boss()
+		self.all_sprites.add(self.b)
+		bossess.add(self.b)
+	
 	def newmeteors(self):
 		self.m = Meteor()
 		self.all_sprites.add(self.m)
 		meteors.add(self.m)
 	
-	def newguide(self):
-		self.gui = Guide()
-		self.all_sprites.add(self.gui)
-		guides.add(self.gui)
+	# def newguide(self):
+	# 	self.gui = Guide()
+	# 	self.all_sprites.add(self.gui)
+	# 	guides.add(self.gui)
 
 	def draw_text(self, surf, text, size, x, y, color):
 		self.font = pg.font.Font(font_name, size)
@@ -257,20 +262,18 @@ class Game:
 					sprite.kill() 
 				if random.random() > 0.8:
 					self.newmeteors()
-				self.newguide()
-				if pg.time.get_ticks() > 15000:
-					for sprite in guides:
-						sprite.kill() 
 			if self.counter <= 280:
 				self.phase = 2
 				for sprite in meteors:
   					sprite.kill() 
 				if random.random() > 0.9:
 					self.newenemy_2()
-				self.newguide()
-				if pg.time.get_ticks() > 25000:
-					for sprite in guides:
-						sprite.kill() 
+			if self.counter <= 280:
+  				self.phase = 2
+				for sprite in enemy_2s:
+  					sprite.kill() 
+				if random.random() > 0.9:
+					self.newboss()
 
 	def player_death(self):
   		# if player died and explosion finished playing
