@@ -8,10 +8,12 @@ from os import path
 all_sprites = pg.sprite.Group()
 enemy_1s = pg.sprite.Group()
 enemy_2s = pg.sprite.Group()
+bosses = pg.sprite.Group()
 bullets = pg.sprite.Group() 
 en_bullets = pg.sprite.Group()
 en2_bullets = pg.sprite.Group()
 en_laser_balls = pg.sprite.Group()
+bossBullets = pg.sprite.Group()
 powerups = pg.sprite.Group()
 meteors = pg.sprite.Group()
 # guides = pg.sprite.Group()
@@ -243,6 +245,78 @@ class Meteor(pg.sprite.Sprite):
 		# if pg.time.get_ticks() >= 20000:
   		# 	self.kill()
 
+####### BOSS CLASS #############
+class Boss(pg.sprite.Sprite):
+	def __init__(self):
+		pg.sprite.Sprite.__init__(self)
+		self.image = boss_img
+		self.image.set_colorkey(BLACK)
+		self.rect = self.image.get_rect()
+		self.radius = 30
+		#movement 
+		self.rect.x = WIDTH / 2
+		self.rect.y = HEIGHT - 500
+		# self.speedy = random.randrange(1, 8)
+		# self.speedx = random.randrange(-3, 3)
+		self.rect.centerx = WIDTH / 2
+		# self.rect.leftgun = self.rect.centerx - 30
+		# self.rect.rightgun = self.rect.centerx + 30
+		self.speed = 5
+		self.speedx = 5
+		self.speedy = 5
+		self.shield = 500
+		self.shoot_delay = 250
+		self.last_shot = pg.time.get_ticks()
+		# self.player = player
+
+	def update(self):
+		# self.shoot()
+		# self.follow_player(self.player)
+		self.rect.x += self.speedx 
+		self.rect.y += self.speedy
+
+		# if self.rect.right > WIDTH:
+  		# 	self.rect.right = WIDTH
+		# if self.rect.left < 0:
+		# 	self.rect.left = 0 
+		# if self.rect.bottom > HEIGHT - 400:
+		# 	self.rect.bottom = HEIGHT - 400
+		# if self.rect.top < 0:
+		# 	self.rect.top = 0 
+
+		if self.rect.right > WIDTH:
+			self.rect.right = WIDTH
+		if self.rect.left < 0:
+			self.rect.left = 0 
+		if self.rect.bottom > HEIGHT - 400:
+			self.rect.bottom = HEIGHT - 400
+		if self.rect.top < 0:
+			self.rect.top = 0 
+	
+	# def follow_player(self, player):
+	# 	dx = self.rect.x - player.rect.x
+	# 	dy = self.rect.y - player.rect.y
+	# 	dist = math.hypot(dx, dy)
+	# 	dx = dx / dist
+	# 	dy = dy / dist
+	# 	self.rect.x += dx * self.speed
+	# 	self.rect.y += dy * self.speed 
+		
+
+	def shoot(self):
+		now = pg.time.get_ticks()
+		if now - self.last_shot > self.shoot_delay:
+			self.last_shot = now
+			bossBullet0 = Bullet(self.rect.centerx, self.rect.bottom + 25, boss_laser, 10)
+			bossBullet1 = Bullet(self.rect.left + 35, self.rect.bottom + 25, boss_laser, 10)
+			bossBullet2 = Bullet(self.rect.right - 35, self.rect.bottom + 25, boss_laser, 10)
+			all_sprites.add(bossBullet0)
+			all_sprites.add(bossBullet1)
+			all_sprites.add(bossBullet2)
+			bossBullets.add(bossBullet0)
+			bossBullets.add(bossBullet1)
+			bossBullets.add(bossBullet2)
+	
 ####### BULLET CLASS #############
 class Bullet(pg.sprite.Sprite):
   	#tell bullet to spawn at particular loc according to player
