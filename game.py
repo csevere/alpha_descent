@@ -323,7 +323,6 @@ class Game:
 
 	def update_phase(self):
 		if self.running:
-  			pass 
 			# if self.counter <= 295:
 			# 	self.phase = 1
 			# 	for sprite in enemy_1s:
@@ -336,13 +335,13 @@ class Game:
   			# 		sprite.kill() 
 			# 	if random.random() > 0.9:
 			# 		self.newenemy_2()
-			# if self.counter <= 295:
-			# 	self.phase = 3
-			# 	for sprite in enemy_1s:
-  			# 		sprite.kill() 
-			# 	for sprite in enemy_2s:
-			# 		sprite.kill() 
-			# 	self.newboss()
+			if self.counter <= 295:
+				self.phase = 3
+				for sprite in enemy_1s:
+  					sprite.kill() 
+				for sprite in enemy_2s:
+					sprite.kill() 
+				self.newboss()
 				 
 
 	def player_death(self):

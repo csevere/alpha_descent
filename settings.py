@@ -14,9 +14,13 @@ POWERUP_TIME = 5000
 screen = pg.display.set_mode((WIDTH, HEIGHT))
 font_name = pg.font.match_font('arial')
 
-#PLAYER PROPERTIES
+#PLAYER ATTR
 PLAYER_ACC = 0.9
 PLAYER_DEC = -0.05
+#BOSS ATTR
+BOSS_ACC = 0.5
+BOSS_DEC = -0.08
+
 
 ######## COLORS ###############
 WHITE = (255, 255, 255)

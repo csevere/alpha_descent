@@ -72,13 +72,12 @@ class Player(pg.sprite.Sprite):
 			self.acc.y = PLAYER_ACC
 		if keystate[pg.K_SPACE]:
 			self.shoot() 
-
 		#apply decelerator 
 		self.acc += self.vel * PLAYER_DEC
 		#motion equations
 		self.vel += self.acc
 		self.pos += self.vel + 0.5 * self.acc
-		#wrap around sides of screen
+		#prevent going off screen
 		if self.pos.x > WIDTH:
   			self.pos.x = WIDTH
 		if self.pos.x < 0:
@@ -260,47 +259,32 @@ class Boss(pg.sprite.Sprite):
 		self.image.set_colorkey(BLACK)
 		self.rect = self.image.get_rect()
 		self.radius = 30
-		#movement 
-		self.rect.x = WIDTH / 2
-		self.rect.y = HEIGHT - 500
-		# self.speedy = random.randrange(1, 8)
-		# self.speedx = random.randrange(-3, 3)
-		self.rect.centerx = WIDTH / 2
-		# self.rect.leftgun = self.rect.centerx - 30
-		# self.rect.rightgun = self.rect.centerx + 30
-		self.speed = 5
-		# self.speedx = 5
-		# self.speedy = 5
+		self.rect.center = (WIDTH / 2, HEIGHT / 4)
+		#creating realistic movement
+		self.pos = vec(WIDTH / 2, HEIGHT / 4)
+		self.vel = vec(0, 0)
+		self.acc = vec(0, 0)
 		self.shield = 500
 		self.shoot_delay = 250
 		self.last_shot = pg.time.get_ticks()
-		# self.player = player
 
 	def update(self):
-		# self.shoot()
-		# self.follow_player(self.player)
-		self.rect.x += self.speedx 
-		self.rect.y += self.speedy
-		
+		self.shoot()
+		#movement 
+		self.acc = vec(0, 0)
+		self.acc.x = BOSS_ACC	
+		#apply decelerator 
+		self.acc += self.vel * BOSS_DEC
+		#motion equations
+		self.vel += self.acc
+		self.pos += self.vel + 0.5 * self.acc
 
-		if self.rect.right > WIDTH:
-			self.rect.right = WIDTH
-		if self.rect.left < 0:
-			self.rect.left = 0 
-		if self.rect.bottom > HEIGHT - 400:
-			self.rect.bottom = HEIGHT - 400
-		if self.rect.top < 0:
-			self.rect.top = 0 
-	
-	# def follow_player(self, player):
-	# 	dx = self.rect.x - player.rect.x
-	# 	dy = self.rect.y - player.rect.y
-	# 	dist = math.hypot(dx, dy)
-	# 	dx = dx / dist
-	# 	dy = dy / dist
-	# 	self.rect.x += dx * self.speed
-	# 	self.rect.y += dy * self.speed 
-		
+		#move sideways 
+		if self.pos.x > 400:
+			# self.pos.x = 100
+		if self.pos.x < 0:
+			# self.pos.x = 300
+		self.rect.center = self.pos
 
 	def shoot(self):
 		now = pg.time.get_ticks()
