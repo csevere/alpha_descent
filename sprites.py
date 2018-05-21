@@ -4,6 +4,7 @@ import math
 import random 
 from settings import *
 from os import path 
+vec = pg.math.Vector2
 
 all_sprites = pg.sprite.Group()
 enemy_1s = pg.sprite.Group()
@@ -28,14 +29,13 @@ class Player(pg.sprite.Sprite):
 		self.image = pg.transform.scale(player_img,(50, 38))
 		self.image.set_colorkey(BLACK)
 		self.rect = self.image.get_rect()
-		#giving the sprit a radius / know how big a circle to look at 
 		self.radius = 20
-		#draw a circle on top of the image
-		# pg.draw.circle(self.image, RED, self.rect.center, self.radius)
-		self.rect.centerx = WIDTH / 2
-		self.rect.bottom = HEIGHT - 10
-		self.speedx = 0
-		self.speedy = 0
+		self.rect.center = (WIDTH / 2, HEIGHT / 2)
+		self.rect.bottom = HEIGHT - 30
+		#creating realistic movement using vectors
+		self.pos = vec(WIDTH / 2, HEIGHT - 30)
+		self.vel = vec(0, 0)
+		self.acc = vec(0, 0)
 		self.shield = 100
 		self.shoot_delay = 250
 		self.last_shot = pg.time.get_ticks()
@@ -56,32 +56,39 @@ class Player(pg.sprite.Sprite):
 		#unhide if hidden after a seconds
 		if self.hidden and pg.time.get_ticks() - self.hide_timer > 2000:
 			self.hidden = False
-			self.rect.center = (WIDTH / 2, HEIGHT - 30)
-			# self.rect.centerx = WIDTH / 2
-			# self.rect.bottom = HEIGHT - 10
-		self.speedx = 0
-		self.speedy = 0
+			self.rect.center = (WIDTH / 2, HEIGHT / 2)
+			self.rect.bottom = HEIGHT - 30
+
+		#movement
+		self.acc = vec(0, 0)
 		keystate = pg.key.get_pressed()
 		if keystate[pg.K_LEFT]:
-			self.speedx = -8
+			self.acc.x = -PLAYER_ACC
 		if keystate[pg.K_RIGHT]:
-			self.speedx = 8
+			self.acc.x = PLAYER_ACC
 		if keystate[pg.K_UP]:
-  			self.speedy = -8
+  			self.acc.y = -PLAYER_ACC
 		if keystate[pg.K_DOWN]:
-			self.speedy = 8
+			self.acc.y = PLAYER_ACC
 		if keystate[pg.K_SPACE]:
 			self.shoot() 
-		self.rect.x += self.speedx
-		self.rect.y += self.speedy
-		if self.rect.right > WIDTH:
-  			self.rect.right = WIDTH
-		if self.rect.left < 0:
-  			self.rect.left = 0 
-		if self.rect.bottom > HEIGHT:
-			self.rect.bottom = HEIGHT
-		if self.rect.top < 0:
-			self.rect.top = 0 
+
+		#apply decelerator 
+		self.acc += self.vel * PLAYER_DEC
+		#motion equations
+		self.vel += self.acc
+		self.pos += self.vel + 0.5 * self.acc
+		#wrap around sides of screen
+		if self.pos.x > WIDTH:
+  			self.pos.x = WIDTH
+		if self.pos.x < 0:
+  			self.pos.x = 0 
+		if self.pos.y > HEIGHT:
+			self.pos.y = HEIGHT
+		if self.pos.y < 0:
+			self.pos.y = 0
+
+		self.rect.center = self.pos
 
 	def powerup(self):
 		self.power += 1
@@ -262,8 +269,8 @@ class Boss(pg.sprite.Sprite):
 		# self.rect.leftgun = self.rect.centerx - 30
 		# self.rect.rightgun = self.rect.centerx + 30
 		self.speed = 5
-		self.speedx = 5
-		self.speedy = 5
+		# self.speedx = 5
+		# self.speedy = 5
 		self.shield = 500
 		self.shoot_delay = 250
 		self.last_shot = pg.time.get_ticks()
@@ -274,15 +281,7 @@ class Boss(pg.sprite.Sprite):
 		# self.follow_player(self.player)
 		self.rect.x += self.speedx 
 		self.rect.y += self.speedy
-
-		# if self.rect.right > WIDTH:
-  		# 	self.rect.right = WIDTH
-		# if self.rect.left < 0:
-		# 	self.rect.left = 0 
-		# if self.rect.bottom > HEIGHT - 400:
-		# 	self.rect.bottom = HEIGHT - 400
-		# if self.rect.top < 0:
-		# 	self.rect.top = 0 
+		
 
 		if self.rect.right > WIDTH:
 			self.rect.right = WIDTH
