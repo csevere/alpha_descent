@@ -4,14 +4,17 @@ import math
 import random 
 from settings import *
 from os import path 
+vec = pg.math.Vector2
 
 all_sprites = pg.sprite.Group()
 enemy_1s = pg.sprite.Group()
 enemy_2s = pg.sprite.Group()
+bosses = pg.sprite.Group()
 bullets = pg.sprite.Group() 
 en_bullets = pg.sprite.Group()
 en2_bullets = pg.sprite.Group()
 en_laser_balls = pg.sprite.Group()
+bossBullets = pg.sprite.Group()
 powerups = pg.sprite.Group()
 meteors = pg.sprite.Group()
 # guides = pg.sprite.Group()
@@ -26,14 +29,13 @@ class Player(pg.sprite.Sprite):
 		self.image = pg.transform.scale(player_img,(50, 38))
 		self.image.set_colorkey(BLACK)
 		self.rect = self.image.get_rect()
-		#giving the sprit a radius / know how big a circle to look at 
 		self.radius = 20
-		#draw a circle on top of the image
-		# pg.draw.circle(self.image, RED, self.rect.center, self.radius)
-		self.rect.centerx = WIDTH / 2
-		self.rect.bottom = HEIGHT - 10
-		self.speedx = 0
-		self.speedy = 0
+		self.rect.center = (WIDTH / 2, HEIGHT / 2)
+		self.rect.bottom = HEIGHT - 30
+		#creating realistic movement using vectors
+		self.pos = vec(WIDTH / 2, HEIGHT - 30)
+		self.vel = vec(0, 0)
+		self.acc = vec(0, 0)
 		self.shield = 100
 		self.shoot_delay = 250
 		self.last_shot = pg.time.get_ticks()
@@ -54,32 +56,38 @@ class Player(pg.sprite.Sprite):
 		#unhide if hidden after a seconds
 		if self.hidden and pg.time.get_ticks() - self.hide_timer > 2000:
 			self.hidden = False
-			self.rect.center = (WIDTH / 2, HEIGHT - 30)
-			# self.rect.centerx = WIDTH / 2
-			# self.rect.bottom = HEIGHT - 10
-		self.speedx = 0
-		self.speedy = 0
+			self.rect.center = (WIDTH / 2, HEIGHT / 2)
+			self.rect.bottom = HEIGHT - 30
+
+		#movement
+		self.acc = vec(0, 0)
 		keystate = pg.key.get_pressed()
 		if keystate[pg.K_LEFT]:
-			self.speedx = -8
+			self.acc.x = -PLAYER_ACC
 		if keystate[pg.K_RIGHT]:
-			self.speedx = 8
+			self.acc.x = PLAYER_ACC
 		if keystate[pg.K_UP]:
-  			self.speedy = -8
+  			self.acc.y = -PLAYER_ACC
 		if keystate[pg.K_DOWN]:
-			self.speedy = 8
+			self.acc.y = PLAYER_ACC
 		if keystate[pg.K_SPACE]:
 			self.shoot() 
-		self.rect.x += self.speedx
-		self.rect.y += self.speedy
-		if self.rect.right > WIDTH:
-  			self.rect.right = WIDTH
-		if self.rect.left < 0:
-  			self.rect.left = 0 
-		if self.rect.bottom > HEIGHT:
-			self.rect.bottom = HEIGHT
-		if self.rect.top < 0:
-			self.rect.top = 0 
+		#apply decelerator 
+		self.acc += self.vel * PLAYER_DEC
+		#motion equations
+		self.vel += self.acc
+		self.pos += self.vel + 0.5 * self.acc
+		#prevent going off screen
+		if self.pos.x > WIDTH:
+  			self.pos.x = WIDTH
+		if self.pos.x < 0:
+  			self.pos.x = 0 
+		if self.pos.y > HEIGHT:
+			self.pos.y = HEIGHT
+		if self.pos.y < 0:
+			self.pos.y = 0
+
+		self.rect.center = self.pos
 
 	def powerup(self):
 		self.power += 1
@@ -243,6 +251,55 @@ class Meteor(pg.sprite.Sprite):
 		# if pg.time.get_ticks() >= 20000:
   		# 	self.kill()
 
+####### BOSS CLASS #############
+class Boss(pg.sprite.Sprite):
+	def __init__(self):
+		pg.sprite.Sprite.__init__(self)
+		self.image = boss_img
+		self.image.set_colorkey(BLACK)
+		self.rect = self.image.get_rect()
+		self.radius = 30
+		self.rect.center = (WIDTH / 2, HEIGHT / 4)
+		#creating realistic movement
+		self.pos = vec(WIDTH / 2, HEIGHT / 4)
+		self.vel = vec(0, 0)
+		self.acc = vec(0, 0)
+		self.shield = 500
+		self.shoot_delay = 250
+		self.last_shot = pg.time.get_ticks()
+
+	def update(self):
+		self.shoot()
+		#movement 
+		self.acc = vec(0, 0)
+		self.acc.x = BOSS_ACC	
+		#apply decelerator 
+		self.acc += self.vel * BOSS_DEC
+		#motion equations
+		self.vel += self.acc
+		self.pos += self.vel + 0.5 * self.acc
+
+		#move sideways 
+		if self.pos.x > 400:
+			# self.pos.x = 100
+		if self.pos.x < 0:
+			# self.pos.x = 300
+		self.rect.center = self.pos
+
+	def shoot(self):
+		now = pg.time.get_ticks()
+		if now - self.last_shot > self.shoot_delay:
+			self.last_shot = now
+			bossBullet0 = Bullet(self.rect.centerx, self.rect.bottom + 25, boss_laser, 10)
+			bossBullet1 = Bullet(self.rect.left + 35, self.rect.bottom + 25, boss_laser, 10)
+			bossBullet2 = Bullet(self.rect.right - 35, self.rect.bottom + 25, boss_laser, 10)
+			all_sprites.add(bossBullet0)
+			all_sprites.add(bossBullet1)
+			all_sprites.add(bossBullet2)
+			bossBullets.add(bossBullet0)
+			bossBullets.add(bossBullet1)
+			bossBullets.add(bossBullet2)
+	
 ####### BULLET CLASS #############
 class Bullet(pg.sprite.Sprite):
   	#tell bullet to spawn at particular loc according to player

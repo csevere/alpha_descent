@@ -8,8 +8,6 @@ from settings import *
 from sprites import * 
 from os import path    
 
-
-
 class Game:
 	def __init__(self):
 		#initalize game window
@@ -35,10 +33,22 @@ class Game:
 		enemy_2s.add(self.e2)
 	
 	def newboss(self):
-  		self.b = Boss()
-		self.all_sprites.add(self.b)
-		bossess.add(self.b)
-	
+		if len(bosses) == 0:
+			self.b = Boss()
+			self.all_sprites.add(self.b)
+			bosses.add(self.b)
+				  
+		self.draw_boss_shield_bar(self.screen, WIDTH - 10, 5, self.b.shield)
+		self.laser_hits_boss()
+		if self.b.shield == 0:
+			random.choice(expl_snds).play()
+			self.expl = Explosion(self.b.rect.centerx, 'lg')
+			self.expl = Explosion(self.b.rect.centerx, 'lg')
+			self.expl = Explosion(self.b.rect.centerx, 'lg')
+			self.all_sprites.add(self.expl) 
+			for sprite in bosses:
+				sprite.kill() 
+  			
 	def newmeteors(self):
 		self.m = Meteor()
 		self.all_sprites.add(self.m)
@@ -68,6 +78,18 @@ class Game:
 		pg.draw.rect(surf, GREEN, self.fill_rect)
 		#last arg is for how wide you want rect to be
 		pg.draw.rect(surf, WHITE, self.outline_rect, 2)
+
+	def draw_boss_shield_bar(self,surf, x, y, hp):
+		if hp < 0:
+			hp = 0
+		self.BAR_LENGTH = 100
+		self.BAR_HEIGHT = 10
+		self.fill = (hp / 100) * self.BAR_LENGTH 
+		self.outline_rect = pg.Rect(x, y, self.BAR_LENGTH, self.BAR_HEIGHT)
+		self.fill_rect = pg.Rect( x, y, self.fill, self.BAR_HEIGHT)
+		pg.draw.rect(surf, RED, self.fill_rect)
+		#last arg is for how wide you want rect to be
+		pg.draw.rect(surf, WHITE, self.outline_rect, 2)
 	
 	def draw_lives(self, surf, x, y, lives, img):
 		for i in range(lives):
@@ -82,7 +104,7 @@ class Game:
 		self.score = 0
 		self.phase = 0 
 		self.player = Player()
-		self.all_sprites.add(self.player)
+		self.all_sprites.add(self.player)		
 		for i in range(5):
 			self.newenemy_1()
 		self.run()
@@ -124,7 +146,22 @@ class Game:
 				self.power = Power(hit.rect.center)
 				self.all_sprites.add(self.power)
 				powerups.add(self.power)
-			
+
+	def laser_hits_boss(self):
+		self.hits = pg.sprite.groupcollide(bullets, bosses, True, True)
+		#respawn the mob
+		for hit in self.hits:
+			self.score += 25
+			#play random sound in list 
+			random.choice(expl_snds).play()
+			self.expl = Explosion(hit.rect.center, 'lg')
+			self.all_sprites.add(self.expl) 
+			if random.random() > 0.9:
+				self.power = Power(hit.rect.center)
+				self.all_sprites.add(self.power)
+				powerups.add(self.power)
+
+
 	def e1_hits_player(self):
 		self.hits = pg.sprite.spritecollide(self.player, enemy_1s, True, pg.sprite.collide_circle)
 		for hit in self.hits:
@@ -157,6 +194,21 @@ class Game:
 				self.player.lives -= 1
 				self.player.shield = 100
 	
+	def boss_hits_player(self):
+		self.hits = pg.sprite.spritecollide(self.player, bosses, True, pg.sprite.collide_circle)
+		for hit in self.hits:
+			random.choice(expl_snds).play()
+			self.player.shield -= 100
+			self.expl = Explosion(hit.rect.center, 'sm')
+			self.all_sprites.add(self.expl) 
+			if self.player.shield <= 0:
+				player_death_snd.play() 
+				self.death_expl = Explosion(self.player.rect.center, 'player')
+				all_sprites.add(self.death_expl)
+				self.player.hide()
+				self.player.lives -= 1
+				self.player.shield = 100
+
 	def enbullets_hit_player(self):
 		self.hits = pg.sprite.spritecollide(self.player, en_bullets, True, pg.sprite.collide_circle)
 		for hit in self.hits:
@@ -186,7 +238,22 @@ class Game:
 				self.player.hide()
 				self.player.lives -= 1
 				self.player.shield = 100
-		
+
+	def bossBullets_hit_player(self):
+		self.hits = pg.sprite.spritecollide(self.player, bossBullets, True, pg.sprite.collide_circle)
+		for hit in self.hits:
+			random.choice(expl_snds).play()
+			self.player.shield -= 5
+			self.expl = Explosion(hit.rect.center, 'sm')
+			self.all_sprites.add(self.expl) 
+			if self.player.shield <= 0:
+				player_death_snd.play() 
+				self.death_expl = Explosion(self.player.rect.center, 'player')
+				self.all_sprites.add(self.death_expl)
+				self.player.hide()
+				self.player.lives -= 1
+				self.player.shield = 100
+
 	def laser_hits_enbullets(self):
   		#player's bullets hit mob bullets 
 		self.hits = pg.sprite.groupcollide(en_bullets, bullets, True, True)
@@ -255,25 +322,27 @@ class Game:
 				self.player.powerup()
 
 	def update_phase(self):
-		if self.playing:
-			if self.counter <= 290:
-				self.phase = 1
+		if self.running:
+			# if self.counter <= 295:
+			# 	self.phase = 1
+			# 	for sprite in enemy_1s:
+			# 		sprite.kill() 
+			# 	if random.random() > 0.8:
+			# 		self.newmeteors()
+			# if self.counter <= 280:
+			# 	self.phase = 2
+			# 	for sprite in meteors:
+  			# 		sprite.kill() 
+			# 	if random.random() > 0.9:
+			# 		self.newenemy_2()
+			if self.counter <= 295:
+				self.phase = 3
 				for sprite in enemy_1s:
-					sprite.kill() 
-				if random.random() > 0.8:
-					self.newmeteors()
-			if self.counter <= 280:
-				self.phase = 2
-				for sprite in meteors:
   					sprite.kill() 
-				if random.random() > 0.9:
-					self.newenemy_2()
-			if self.counter <= 280:
-  				self.phase = 2
 				for sprite in enemy_2s:
-  					sprite.kill() 
-				if random.random() > 0.9:
-					self.newboss()
+					sprite.kill() 
+				self.newboss()
+				 
 
 	def player_death(self):
   		# if player died and explosion finished playing
@@ -299,6 +368,7 @@ class Game:
 		self.meteors_hit_player()
 		self.laser_hits_meteors()
 		self.update_phase()
+
 		self.player_death()
 		
 	def events(self):
@@ -371,6 +441,3 @@ while g.running:
 	g.show_gameover_screen()
 pg.quit()
 	
-
-
-

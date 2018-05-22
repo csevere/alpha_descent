@@ -14,6 +14,14 @@ POWERUP_TIME = 5000
 screen = pg.display.set_mode((WIDTH, HEIGHT))
 font_name = pg.font.match_font('arial')
 
+#PLAYER ATTR
+PLAYER_ACC = 0.9
+PLAYER_DEC = -0.05
+#BOSS ATTR
+BOSS_ACC = 0.5
+BOSS_DEC = -0.08
+
+
 ######## COLORS ###############
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -40,13 +48,15 @@ player_mini_img = pg.transform.scale(player_img, (25, 19))
 player_mini_img.set_colorkey(BLACK)
 laser_img = pg.image.load(path.join(img_dir, "laser_green.png")).convert()
 p_laser_img = pg.image.load(path.join(img_dir, "laserBlue02.png")).convert()
-enemy_laser_img = pg.image.load(path.join(enemy_dir, "laserRed01.png")).convert()
 guide = pg.image.load(path.join(img_dir, "guide.png")).convert()
-###### POWERUPS
+###### POWERUPS #################
 powerup_images = {}
 powerup_images['shield'] = pg.image.load(path.join(img_dir, "shield_gold.png")).convert()
 powerup_images['laser'] = pg.image.load(path.join(img_dir, "bolt_gold.png")).convert()
-##### ENEMIES
+##### ENEMIES #################
+boss_img = pg.image.load(path.join(enemy_dir, "boss_ship.png")).convert()
+boss_laser = pg.image.load(path.join(enemy_dir, "laserRed05.png")).convert()
+enemy_laser_img = pg.image.load(path.join(enemy_dir, "laserRed01.png")).convert()
 laser_ball = pg.image.load(path.join(enemy_dir, "laser_ball.png")).convert() 
 enemy_images = []
 enemy_list = [	'enemyBlack1.png', 'enemyBlack4.png', 'enemyBlue1.png', 'enemyBlue4.png', 
