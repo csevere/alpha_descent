@@ -21,6 +21,7 @@ class Game:
 		self.counter = 300
 		self.timer = pg.time.set_timer(pg.USEREVENT, 1000)
 		self.timer_str = ""
+		self.boss_shield = 300
   		
 	def newenemy_1(self):
 		self.e1 = Enemy_1()
@@ -33,20 +34,17 @@ class Game:
 		enemy_2s.add(self.e2)
 	
 	def newboss(self):
-		if len(bosses) == 0:
+		if len(boss) == 0:
 			self.b = Boss()
 			self.all_sprites.add(self.b)
-			bosses.add(self.b)
-				  
-		self.draw_boss_shield_bar(self.screen, WIDTH - 10, 5, self.b.shield)
+			boss.add(self.b) 
 		self.laser_hits_boss()
-		if self.b.shield == 0:
-			random.choice(expl_snds).play()
-			self.expl = Explosion(self.b.rect.centerx, 'lg')
-			self.expl = Explosion(self.b.rect.centerx, 'lg')
-			self.expl = Explosion(self.b.rect.centerx, 'lg')
-			self.all_sprites.add(self.expl) 
-			for sprite in bosses:
+		self.bossBullets_hit_player()
+		self.boss_hits_player()
+		self.laser_hits_bossBullets()
+		if self.boss_shield <= 0:
+  			#show victory scene
+			for sprite in boss:
 				sprite.kill() 
   			
 	def newmeteors(self):
@@ -82,9 +80,9 @@ class Game:
 	def draw_boss_shield_bar(self,surf, x, y, hp):
 		if hp < 0:
 			hp = 0
-		self.BAR_LENGTH = 100
+		self.BAR_LENGTH = 300
 		self.BAR_HEIGHT = 10
-		self.fill = (hp / 100) * self.BAR_LENGTH 
+		self.fill = (hp / 300) * self.BAR_LENGTH 
 		self.outline_rect = pg.Rect(x, y, self.BAR_LENGTH, self.BAR_HEIGHT)
 		self.fill_rect = pg.Rect( x, y, self.fill, self.BAR_HEIGHT)
 		pg.draw.rect(surf, RED, self.fill_rect)
@@ -148,10 +146,10 @@ class Game:
 				powerups.add(self.power)
 
 	def laser_hits_boss(self):
-		self.hits = pg.sprite.groupcollide(bullets, bosses, True, True)
-		#respawn the mob
+		self.hits = pg.sprite.groupcollide(boss, bullets, True, pg.sprite.collide_circle)
 		for hit in self.hits:
 			self.score += 25
+			self.boss_shield -= 15
 			#play random sound in list 
 			random.choice(expl_snds).play()
 			self.expl = Explosion(hit.rect.center, 'lg')
@@ -160,7 +158,6 @@ class Game:
 				self.power = Power(hit.rect.center)
 				self.all_sprites.add(self.power)
 				powerups.add(self.power)
-
 
 	def e1_hits_player(self):
 		self.hits = pg.sprite.spritecollide(self.player, enemy_1s, True, pg.sprite.collide_circle)
@@ -195,10 +192,10 @@ class Game:
 				self.player.shield = 100
 	
 	def boss_hits_player(self):
-		self.hits = pg.sprite.spritecollide(self.player, bosses, True, pg.sprite.collide_circle)
+		self.hits = pg.sprite.spritecollide(self.player, boss, True, pg.sprite.collide_circle)
 		for hit in self.hits:
 			random.choice(expl_snds).play()
-			self.player.shield -= 100
+			self.player.shield -= hit.radius * 2
 			self.expl = Explosion(hit.rect.center, 'sm')
 			self.all_sprites.add(self.expl) 
 			if self.player.shield <= 0:
@@ -253,6 +250,16 @@ class Game:
 				self.player.hide()
 				self.player.lives -= 1
 				self.player.shield = 100
+
+	def laser_hits_bossBullets(self):
+  		#player's bullets hit mob bullets 
+		self.hits = pg.sprite.groupcollide(bossBullets, bullets, True, True)
+		for hit in self.hits:
+			self.score += 90 
+			#play random sound in list 
+			random.choice(expl_snds).play()
+			self.expl = Explosion(hit.rect.center, 'sm')
+			self.all_sprites.add(self.expl) 
 
 	def laser_hits_enbullets(self):
   		#player's bullets hit mob bullets 
@@ -343,7 +350,6 @@ class Game:
 					sprite.kill() 
 				self.newboss()
 				 
-
 	def player_death(self):
   		# if player died and explosion finished playing
 		if self.player.lives == 0 and not self.death_expl.alive():
@@ -368,7 +374,6 @@ class Game:
 		self.meteors_hit_player()
 		self.laser_hits_meteors()
 		self.update_phase()
-
 		self.player_death()
 		
 	def events(self):
@@ -399,6 +404,9 @@ class Game:
 		self.draw_text(self.screen, "SCORE: " + str(self.score), 18, WIDTH * 2.7 / 4, 10, WHITE)
 		self.draw_shield_bar(self.screen, 5, 5, self.player.shield)
 		self.draw_lives(self.screen, WIDTH - 100, 5, self.player.lives, player_mini_img)
+		#draw boss shield
+		if len(boss) == 1:
+			self.draw_boss_shield_bar(self.screen, 100, 40, self.boss_shield)
 		pg.display.flip()
 	
 	def wait_for_key(self):

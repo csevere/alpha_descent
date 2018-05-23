@@ -9,7 +9,7 @@ vec = pg.math.Vector2
 all_sprites = pg.sprite.Group()
 enemy_1s = pg.sprite.Group()
 enemy_2s = pg.sprite.Group()
-bosses = pg.sprite.Group()
+boss = pg.sprite.Group()
 bullets = pg.sprite.Group() 
 en_bullets = pg.sprite.Group()
 en2_bullets = pg.sprite.Group()
@@ -264,35 +264,40 @@ class Boss(pg.sprite.Sprite):
 		self.pos = vec(WIDTH / 2, HEIGHT / 4)
 		self.vel = vec(0, 0)
 		self.acc = vec(0, 0)
-		self.shield = 500
+		self.shield = 300
 		self.shoot_delay = 250
 		self.last_shot = pg.time.get_ticks()
 
 	def update(self):
 		self.shoot()
-		#movement 
-		self.acc = vec(0, 0)
-		self.acc.x = BOSS_ACC	
+		self.chase_player()
 		#apply decelerator 
 		self.acc += self.vel * BOSS_DEC
 		#motion equations
 		self.vel += self.acc
 		self.pos += self.vel + 0.5 * self.acc
-
-		#move sideways 
-		if self.pos.x > 400:
-			# self.pos.x = 100
+		#prevent going off screen
+		if self.pos.x > WIDTH:
+			self.pos.x = WIDTH
 		if self.pos.x < 0:
-			# self.pos.x = 300
+			self.pos.x = 0
 		self.rect.center = self.pos
 
+	def chase_player(self):
+		self.acc = vec(0, 0)
+		keystate = pg.key.get_pressed()
+		if keystate[pg.K_LEFT]:
+			self.acc.x = -BOSS_ACC
+		if keystate[pg.K_RIGHT]:
+			self.acc.x = BOSS_ACC
+	
 	def shoot(self):
 		now = pg.time.get_ticks()
 		if now - self.last_shot > self.shoot_delay:
 			self.last_shot = now
-			bossBullet0 = Bullet(self.rect.centerx, self.rect.bottom + 25, boss_laser, 10)
-			bossBullet1 = Bullet(self.rect.left + 35, self.rect.bottom + 25, boss_laser, 10)
-			bossBullet2 = Bullet(self.rect.right - 35, self.rect.bottom + 25, boss_laser, 10)
+			bossBullet0 = Bullet(self.rect.centerx, self.rect.bottom + 25, boss_laser2, 10)
+			bossBullet1 = Bullet(self.rect.left + 35, self.rect.bottom + 25, boss_laser, 20)
+			bossBullet2 = Bullet(self.rect.right - 35, self.rect.bottom + 25, boss_laser, 20)
 			all_sprites.add(bossBullet0)
 			all_sprites.add(bossBullet1)
 			all_sprites.add(bossBullet2)
