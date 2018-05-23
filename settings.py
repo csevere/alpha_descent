@@ -19,8 +19,7 @@ PLAYER_ACC = 0.9
 PLAYER_DEC = -0.05
 #BOSS ATTR
 BOSS_ACC = 0.5
-BOSS_DEC = -0.08
-
+BOSS_DEC = -0.15
 
 ######## COLORS ###############
 WHITE = (255, 255, 255)
@@ -56,6 +55,7 @@ powerup_images['laser'] = pg.image.load(path.join(img_dir, "bolt_gold.png")).con
 ##### ENEMIES #################
 boss_img = pg.image.load(path.join(enemy_dir, "boss_ship.png")).convert()
 boss_laser = pg.image.load(path.join(enemy_dir, "laserRed05.png")).convert()
+boss_laser2 = pg.image.load(path.join(enemy_dir, "laserRed08.png")).convert()
 enemy_laser_img = pg.image.load(path.join(enemy_dir, "laserRed01.png")).convert()
 laser_ball = pg.image.load(path.join(enemy_dir, "laser_ball.png")).convert() 
 enemy_images = []
